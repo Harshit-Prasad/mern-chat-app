@@ -1,0 +1,10 @@
+{
+  "name": "mern-chat-application",
+  "version": "1.0.0",
+  "description": "",
+  "main": "/server/src/server.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
