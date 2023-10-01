@@ -1,0 +1,19 @@
+.header {
+  padding: 0.1rem;
+}
+
+.heading {
+  text-align: center;
+  font-size: 36px;
+}
+
+@media (min-width: 768px) {
+  .heading {
+    font-size: 44px;
+  }
+
+  .header {
+    grid-area: header;
+    padding: 0.5rem;
+  }
+}
