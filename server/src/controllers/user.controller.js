@@ -2,12 +2,12 @@ import asyncHandler from "express-async-handler";
 import { User } from "../models/user.model.js";
 import getJWT from "../config/jwt.js";
 
-// @description     Register new user
-// @route           POST /api/user/
-// @access          Public
+// @Description     Register new user
+// @Route           POST /api/user/
+// @Access          Public
 const registerUser = asyncHandler(async (req, res) => {
   console.log(req.body);
-  const { name, email, password, color } = req.body;
+  const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
     res.status(400);
@@ -25,7 +25,6 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
-    color,
   });
 
   if (user) {
@@ -33,7 +32,7 @@ const registerUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      color: user.color,
+      isAdmin: user.isAdmin,
       token: getJWT(user._id),
     });
   } else {
@@ -42,9 +41,9 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-//@description     Login the user
-//@route           POST /api/users/login
-//@access          Public
+//@Description     Login the user
+//@Route           POST /api/users/login
+//@Access          Public
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -55,7 +54,7 @@ const loginUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      color: user.color,
+      isAdmin: user.isAdmin,
       token: getJWT(user._id),
     });
   } else {
@@ -64,9 +63,9 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @description     Get all users
-// @route           GET /api/user?search=
-// @access          Public
+// @Description     Get all users
+// @Route           GET /api/user?search=something
+// @Access          Public
 const getAllUsers = asyncHandler(async (req, res) => {
   const keyword = req.query.search
     ? {
