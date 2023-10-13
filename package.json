@@ -14,5 +14,8 @@
   "description": "",
   "devDependencies": {
     "concurrently": "^8.2.1"
+  },
+  "dependencies": {
+    "bootstrap-icons": "^1.11.1"
   }
 }
