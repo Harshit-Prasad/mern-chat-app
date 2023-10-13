@@ -4,11 +4,17 @@ import { Chat } from "../models/chat.model.js";
 
 const getChat = asyncHandler(async (req, res) => {
   try {
-    const chat = await Chat.find({
+    let chat = await Chat.find({
       users: { $elemMatch: { $eq: req.user._id } },
     })
       .populate("users", "-password")
+      .populate("latestMessage")
       .sort({ updatedAt: -1 });
+
+    chat = await User.populate(chat, {
+      path: "latestMessage.sender",
+      select: "name bgColor email",
+    });
 
     res.send(chat);
   } catch (error) {

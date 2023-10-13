@@ -4,8 +4,9 @@ import { Server } from "socket.io";
 import { createServer } from "node:http";
 
 import { connectDB } from "./config/db.js";
-import { router as userRoutes } from "./routes/user.route.js";
-import { router as chatRoutes } from "./routes/chat.route.js";
+import userRoutes from "./routes/user.route.js";
+import chatRoutes from "./routes/chat.route.js";
+import messageRoutes from "./routes/message.route.js";
 
 dotenv.config();
 connectDB();
@@ -18,6 +19,7 @@ app.use(express.json());
 
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/message", messageRoutes);
 
 io.on("connection", (socket) => {
   console.log(socket.id);

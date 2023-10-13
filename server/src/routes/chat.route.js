@@ -6,4 +6,4 @@ const router = express.Router();
 
 router.route("/").post(protect, createChat).get(protect, getChat);
 
-export { router };
+export default router;
