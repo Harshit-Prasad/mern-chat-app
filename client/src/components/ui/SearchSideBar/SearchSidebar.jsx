@@ -38,6 +38,7 @@ export default function SearchSidebar({ show, handleClose }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             type="text"
+            required={true}
             placeholder="Search"
           />
           <Button disabled={isLoading} type="submit" className="btn-secondary">
