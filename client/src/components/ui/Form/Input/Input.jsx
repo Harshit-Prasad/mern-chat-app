@@ -18,6 +18,7 @@ export default function Input({
         onChange={onChange}
         type={type}
         placeholder={placeholder}
+        required={true}
       />
     </Form.Group>
   );

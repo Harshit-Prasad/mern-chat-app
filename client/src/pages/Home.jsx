@@ -1,31 +1,29 @@
-import React, { useState } from "react";
-import { Tab, Tabs } from "react-bootstrap";
+import React from "react";
+import { useSelector } from "react-redux";
 import Container from "../components/layouts/Container/Container";
 import Header from "../components/layouts/Header/Header";
 import Main from "../components/layouts/Main/Main";
-import Login from "../components/ui/Form/Login/Login";
-import Signup from "../components/ui/Form/Signup/Signup";
 import Footer from "../components/layouts/Footer/Footer";
+import Forms from "../components/ui/Form/Forms/Forms";
+import Card from "../components/ui/Card/Card";
 
 export default function Home() {
-  const [key, setKey] = useState("signup");
+  const { userInformation } = useSelector((state) => state.authentication);
+
   return (
     <Container>
-      <Header />
+      <Header>
+        <h1 className="display-3 text-center">Chit-Chat</h1>
+      </Header>
       <Main>
-        <Tabs
-          id="controlled-tab-example"
-          activeKey={key}
-          onSelect={(k) => setKey(k)}
-          className="mb-2 mb-md-3"
-        >
-          <Tab eventKey="login" title="Login">
-            <Login />
-          </Tab>
-          <Tab eventKey="signup" title="Signup">
-            <Signup />
-          </Tab>
-        </Tabs>
+        <div className="h-100 d-flex justify-content-center align-items-center flex-column m-md-0">
+          <div
+            style={{ borderRadius: "1em" }}
+            className="glass p-lg-2 p-2 m-2 d-flex justify-content-center align-items-center flex-column"
+          >
+            {userInformation ? <Card /> : <Forms />}
+          </div>
+        </div>
       </Main>
       <Footer />
     </Container>

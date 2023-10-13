@@ -15,12 +15,15 @@ import Chat from "./pages/Chat.jsx";
 import "./styles/global.css";
 import "./styles/bootstrap.css";
 import store from "./store.js";
+import PrivateRoute from "./components/private-route/PrivateRoute.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
       <Route index={true} path="/" element={<Home />} />
-      <Route index={true} path="/chat" element={<Chat />} />
+      <Route element={<PrivateRoute />}>
+        <Route path="/chat" element={<Chat />} />
+      </Route>
     </Route>
   )
 );

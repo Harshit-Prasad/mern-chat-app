@@ -1,0 +1,15 @@
+.chat-list {
+  width: 100%;
+  margin-inline: 1rem;
+  height: calc(100% - 2rem);
+  border-radius: 1rem;
+  overflow: auto;
+}
+
+@media (min-width: 768px) {
+  .chat-list {
+    width: 33%;
+    height: calc(100% - 4rem);
+    margin-inline: 2rem 1rem;
+  }
+}

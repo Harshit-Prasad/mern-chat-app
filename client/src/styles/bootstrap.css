@@ -97,7 +97,7 @@
   --bs-body-bg: #686dc3;
   --bs-body-bg-rgb: 104, 109, 195;
   --bs-emphasis-color: #000;
-  --bs-emphasis-color-rgb: 0, 0, 0;
+  /* --bs-emphasis-color-rgb: 0, 0, 0; */
   --bs-secondary-color: rgba(255, 255, 255, 0.75);
   --bs-secondary-color-rgb: 255, 255, 255;
   --bs-secondary-bg: #e9e9e8;
@@ -2477,7 +2477,6 @@ textarea.form-control-lg {
   border: 1px solid rgba(255, 255, 255, 0.2);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
-  print-color-adjust: exact;
 }
 .form-check-input[type="checkbox"] {
   border-radius: 0.25em;
@@ -4193,7 +4192,6 @@ fieldset:disabled .btn {
 
 .navbar-collapse {
   flex-basis: 100%;
-  flex-grow: 1;
   align-items: center;
 }
 
@@ -12680,10 +12678,8 @@ fieldset:disabled .btn {
     display: none !important;
   }
 }
-
 body {
-  background-image: linear-gradient(197deg, #33b7e2, #5e62b0, #dc307c);
-  background-repeat: no-repeat;
+  background-image: linear-gradient(200deg, #33b7e2, #5e62b0, #dc307c);
 }
 
 [data-bs-theme="dark"] body {

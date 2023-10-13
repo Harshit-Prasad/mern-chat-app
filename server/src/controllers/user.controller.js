@@ -7,7 +7,7 @@ import getJWT from "../config/jwt.js";
 // @Access          Public
 const registerUser = asyncHandler(async (req, res) => {
   console.log(req.body);
-  const { name, email, password } = req.body;
+  const { name, email, password, bgColor } = req.body;
 
   if (!name || !email || !password) {
     res.status(400);
@@ -25,6 +25,7 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
+    bgColor,
   });
 
   if (user) {
@@ -33,6 +34,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
+      bgColor: user.bgColor,
       token: getJWT(user._id),
     });
   } else {
@@ -55,6 +57,7 @@ const loginUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
+      bgColor: user.bgColor,
       token: getJWT(user._id),
     });
   } else {
@@ -76,7 +79,9 @@ const getAllUsers = asyncHandler(async (req, res) => {
       }
     : {};
 
-  const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
+  const users = await User.find(keyword)
+    .find({ _id: { $ne: req.user._id } })
+    .select("-password");
   res.send(users);
 });
 

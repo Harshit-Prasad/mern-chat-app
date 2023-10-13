@@ -9,6 +9,24 @@ import Input from "../Input/Input";
 import { useSignupMutation } from "../../../../slices/api/userSlice";
 import { setCredentials } from "../../../../slices/state/authenticationSlice";
 
+function getProfileColor() {
+  const colors = [
+    "maroon",
+    "red",
+    "purple",
+    "fuchsia",
+    "green",
+    "lime",
+    "olive",
+    "navy",
+    "blue",
+    "teal",
+  ];
+  const index = Math.round(Math.random() * 9);
+
+  return colors[index];
+}
+
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,14 +39,18 @@ export default function Signup() {
 
   async function onFormSubmit(e) {
     e.preventDefault();
-    console.log(name, password, confirmPassword, email);
 
-    // todo: api call
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
     } else {
       try {
-        const response = await signup({ name, email, password }).unwrap();
+        const bgColor = getProfileColor();
+        const response = await signup({
+          name,
+          email,
+          password,
+          bgColor,
+        }).unwrap();
         toast.success("User created successfully");
         dispatch(setCredentials({ ...response }));
         console.log(response);

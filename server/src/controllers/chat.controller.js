@@ -6,9 +6,15 @@ const getChat = asyncHandler(async (req, res) => {
   try {
     const chat = await Chat.find({
       users: { $elemMatch: { $eq: req.user._id } },
-    });
+    })
+      .populate("users", "-password")
+      .sort({ updatedAt: -1 });
+
     res.send(chat);
-  } catch (error) {}
+  } catch (error) {
+    res.sendStatus(400);
+    throw new Error(error.message);
+  }
 });
 
 const createChat = asyncHandler(async (req, res) => {

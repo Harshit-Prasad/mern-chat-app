@@ -5,8 +5,8 @@ export default function Footer() {
   return (
     <footer className={`glass ${styles.footer}`}>
       <strong>MERN </strong>
-      Chat Application <br />
-      with <strong>Video </strong> and <strong>Voice </strong> calling.
+      Chat Application with <strong>Video </strong> and <strong>Voice </strong>{" "}
+      calling.
     </footer>
   );
 }

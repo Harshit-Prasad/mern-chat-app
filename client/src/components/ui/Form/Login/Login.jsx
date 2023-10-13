@@ -16,14 +16,6 @@ export default function Login() {
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
 
-  function onEmailChange(e) {
-    e.preventDefault();
-  }
-
-  function onPasswordChange(e) {
-    e.preventDefault();
-  }
-
   async function onFormSubmit(e) {
     e.preventDefault();
     console.log(password, email);

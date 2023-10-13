@@ -18,7 +18,15 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+
+    allUsers: builder.query({
+      query: (search) => ({
+        url: `${USER_URL}?search=${search}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useSignupMutation } = userApiSlice;
+export const { useLoginMutation, useSignupMutation, useLazyAllUsersQuery } =
+  userApiSlice;
