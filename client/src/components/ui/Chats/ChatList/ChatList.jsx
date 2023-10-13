@@ -43,21 +43,21 @@ export default function ChatList() {
         styles["chat-list"]
       } p-1`}
     >
-      {isLoading
-        ? Array.from({ length: 100 }).map((_, i) => (
-            <Skeleton style={{}} key={i} />
-          ))
-        : chatList.map((chat) => {
-            const remoteUser = getRemoteUser(userInformation, chat?.users);
+      {isLoading ? (
+        <Skeleton length={8} />
+      ) : (
+        chatList.map((chat) => {
+          const remoteUser = getRemoteUser(userInformation, chat?.users);
 
-            return (
-              <ChatListItem
-                key={chat?._id}
-                onClick={() => selectChat(chat)}
-                remoteUser={remoteUser}
-              />
-            );
-          })}
+          return (
+            <ChatListItem
+              key={chat?._id}
+              onClick={() => selectChat(chat)}
+              remoteUser={remoteUser}
+            />
+          );
+        })
+      )}
     </div>
   );
 }

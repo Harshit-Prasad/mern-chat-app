@@ -46,7 +46,7 @@ export default function SearchSidebar({ show, handleClose }) {
         </Form>
         <div className="pt-2" style={{ backgroundColor: "transparent" }}>
           {isLoading ? (
-            Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} />)
+            <Skeleton length={7} />
           ) : (
             <SearchResults searchResult={searchResult} />
           )}
