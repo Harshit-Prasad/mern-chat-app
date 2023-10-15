@@ -8,6 +8,7 @@ import Input from "../Input/Input";
 
 import { useSignupMutation } from "../../../../slices/api/userSlice";
 import { setCredentials } from "../../../../slices/state/authenticationSlice";
+import Loader from "../../Loader/Loader";
 
 function getProfileColor() {
   const colors = [
@@ -112,7 +113,7 @@ export default function Signup() {
       >
         Signup
       </Button>
-      {isLoading && <span>LOADING...</span>}
+      {isLoading && <Loader />}
     </Form>
   );
 }

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 import { useLazyAllUsersQuery } from "../../../slices/api/userSlice";
 import { Button, Form, Offcanvas } from "react-bootstrap";
 import Skeleton from "../Skeleton/Skeleton";
 import SearchIcon from "../../../assets/icons/SearchIcon";
 import SearchResults from "./SearchResults";
+import Loader from "../Loader/Loader";
 
 export default function SearchSidebar({ show, handleClose }) {
   const [getAllUsers, { isLoading }] = useLazyAllUsersQuery();

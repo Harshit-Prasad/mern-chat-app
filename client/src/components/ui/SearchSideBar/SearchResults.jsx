@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { useCreateChatMutation } from "../../../slices/api/chatSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { setChatList } from "../../../slices/state/chatSlice";
+import Loader from "../Loader/Loader";
 
 export default function SearchResults({ searchResult }) {
   const [createNewChat, { isLoading }, error] = useCreateChatMutation();
+  const [addNewChatId, setAddNewChatId] = useState(null);
   const disptach = useDispatch();
   const { chatList } = useSelector((state) => state.chat);
 
@@ -25,33 +27,36 @@ export default function SearchResults({ searchResult }) {
       const { name, email, bgColor, _id } = result;
       const [avatar] = name.toUpperCase();
       return (
-        <div
-          style={{
-            borderRadius: "1em",
-            cursor: "pointer",
-          }}
-          className="glass p-1 d-flex align-items-center"
-          key={_id}
-          onClick={() => {
-            createChat(_id);
-          }}
-        >
+        <React.Fragment key={_id}>
           <div
             style={{
-              height: "40px",
-              width: "40px",
-              borderRadius: "50%",
-              backgroundColor: bgColor,
+              borderRadius: "1em",
+              cursor: "pointer",
             }}
-            className="d-flex m-1 justify-content-center align-items-center"
+            className="glass p-1 d-flex align-items-center mt-1"
+            onClick={() => {
+              createChat(_id);
+              setAddNewChatId(_id);
+            }}
           >
-            {avatar}
+            <div
+              style={{
+                height: "40px",
+                width: "40px",
+                borderRadius: "50%",
+                backgroundColor: bgColor,
+              }}
+              className="d-flex m-1 justify-content-center align-items-center"
+            >
+              {avatar}
+            </div>
+            <div>
+              <p style={{ fontSize: "1.2em", margin: "0" }}>{name}</p>
+              <p style={{ fontSize: "1em", margin: "0" }}>{email}</p>
+            </div>
           </div>
-          <div>
-            <p style={{ fontSize: "1.2em", margin: "0" }}>{name}</p>
-            <p style={{ fontSize: "1em", margin: "0" }}>{email}</p>
-          </div>
-        </div>
+          {isLoading && addNewChatId === _id && <Loader />}
+        </React.Fragment>
       );
     })
   ) : (

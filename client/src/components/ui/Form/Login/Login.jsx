@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 
 import { useLoginMutation } from "../../../../slices/api/userSlice";
 import { setCredentials } from "../../../../slices/state/authenticationSlice";
+import Loader from "../../Loader/Loader";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -66,6 +67,7 @@ export default function Login() {
       >
         Get Guest User Credentials
       </Button>
+      {isLoading && <Loader />}
     </Form>
   );
 }
