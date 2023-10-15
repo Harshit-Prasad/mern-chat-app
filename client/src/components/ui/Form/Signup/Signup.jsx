@@ -56,7 +56,7 @@ export default function Signup() {
         console.log(response);
         navigate("/chat");
       } catch (error) {
-        toast.error(error.response?.data?.message);
+        toast.error(error?.data?.message);
       }
     }
 

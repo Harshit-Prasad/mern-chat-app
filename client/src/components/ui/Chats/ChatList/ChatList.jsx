@@ -30,9 +30,8 @@ export default function ChatList() {
       try {
         const response = await getChats().unwrap();
         dispatch(setChatList([...response]));
-        console.log(response);
       } catch (error) {
-        toast.error(error?.response?.data?.message);
+        toast.error(error?.data?.message);
       }
     })();
   }, []);

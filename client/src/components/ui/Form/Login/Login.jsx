@@ -18,7 +18,6 @@ export default function Login() {
 
   async function onFormSubmit(e) {
     e.preventDefault();
-    console.log(password, email);
 
     try {
       const response = await login({ email, password }).unwrap();
@@ -26,7 +25,8 @@ export default function Login() {
       dispatch(setCredentials({ ...response }));
       navigate("/chat");
     } catch (error) {
-      toast.error(error?.response?.data?.message);
+      console.log(error);
+      toast.error(error?.data?.message);
     }
 
     setEmail("");

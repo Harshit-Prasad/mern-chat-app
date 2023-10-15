@@ -19,7 +19,7 @@ export default function SearchSidebar({ show, handleClose }) {
       console.log(response);
       setSearchResult(response);
     } catch (error) {
-      console.log(error);
+      toast.error(error?.response?.data?.message);
     }
   }
 
