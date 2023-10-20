@@ -53,6 +53,7 @@ export default function ChatList() {
               key={chat?._id}
               onClick={() => selectChat(chat)}
               remoteUser={remoteUser}
+              chatId={chat._id}
             />
           );
         })

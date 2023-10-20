@@ -54,7 +54,6 @@ export default function Signup() {
         }).unwrap();
         toast.success("User created successfully");
         dispatch(setCredentials({ ...response }));
-        console.log(response);
         navigate("/chat");
       } catch (error) {
         toast.error(error?.data?.message);

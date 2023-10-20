@@ -3,6 +3,7 @@
   margin-inline: 1rem;
   height: calc(100% - 2rem);
   border-radius: 1rem;
+  flex-direction: column;
 }
 
 @media (min-width: 768px) {

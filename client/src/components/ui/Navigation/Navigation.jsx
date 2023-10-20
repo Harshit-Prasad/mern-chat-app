@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import SearchSidebar from "../SearchSideBar/SearchSidebar";
 import NotificationIcon from "../../../assets/icons/NotificationIcon";
-import SearchIcon from "../../../assets/icons/SearchIcon";
+import Search from "../../../assets/icons/Search";
 import Logout from "../../../assets/icons/Logout";
 import styles from "./Navigation.module.css";
 
@@ -23,7 +23,7 @@ export default function Navigation() {
         style={{ gap: "1em" }}
         className="d-flex justify-content-center align-items-center p-2 btn-secondary"
       >
-        <span className="d-none d-md-flex">Search User</span> <SearchIcon />
+        <span className="d-none d-md-flex">Search User</span> <Search />
       </Button>
 
       {/* -- imported -- */}
@@ -51,7 +51,6 @@ export default function Navigation() {
             "btn-secondary d-md-flex d-none justify-content-center align-items-center text-center " +
             styles["profile-btn"]
           }
-          size="lg"
         >
           {userInformation.name[0]}
         </button>

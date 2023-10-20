@@ -2,6 +2,9 @@ import asyncHandler from "express-async-handler";
 import { User } from "../models/user.model.js";
 import { Chat } from "../models/chat.model.js";
 
+// @Description     Get all chats
+// @Route           GET /api/chat/
+// @Access          Private
 const getChat = asyncHandler(async (req, res) => {
   try {
     let chat = await Chat.find({
@@ -23,6 +26,9 @@ const getChat = asyncHandler(async (req, res) => {
   }
 });
 
+// @Description     Create new chat
+// @Route           POST /api/chat/
+// @Access          Private
 const createChat = asyncHandler(async (req, res) => {
   const { userId } = req.body;
 

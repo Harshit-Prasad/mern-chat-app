@@ -4,6 +4,7 @@ import { useCreateChatMutation } from "../../../slices/api/chatSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { setChatList } from "../../../slices/state/chatSlice";
 import Loader from "../Loader/Loader";
+import Avatar from "../Avatar/Avatar";
 
 export default function SearchResults({ searchResult }) {
   const [createNewChat, { isLoading }, error] = useCreateChatMutation();
@@ -25,13 +26,13 @@ export default function SearchResults({ searchResult }) {
   return searchResult ? (
     searchResult.map((result) => {
       const { name, email, bgColor, _id } = result;
-      const [avatar] = name.toUpperCase();
       return (
         <React.Fragment key={_id}>
           <div
             style={{
               borderRadius: "1em",
               cursor: "pointer",
+              gap: "1em",
             }}
             className="glass p-1 d-flex align-items-center mt-1"
             onClick={() => {
@@ -39,17 +40,7 @@ export default function SearchResults({ searchResult }) {
               setAddNewChatId(_id);
             }}
           >
-            <div
-              style={{
-                height: "40px",
-                width: "40px",
-                borderRadius: "50%",
-                backgroundColor: bgColor,
-              }}
-              className="d-flex m-1 justify-content-center align-items-center"
-            >
-              {avatar}
-            </div>
+            <Avatar size={40} name={name} bgColor={bgColor} />
             <div>
               <p style={{ fontSize: "1.2em", margin: "0" }}>{name}</p>
               <p style={{ fontSize: "1em", margin: "0" }}>{email}</p>

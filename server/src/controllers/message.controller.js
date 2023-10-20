@@ -3,6 +3,9 @@ import { Message } from "../models/message.model.js";
 import { User } from "../models/user.model.js";
 import { Chat } from "../models/chat.model.js";
 
+// @Description     Send new message
+// @Route           POST /api/message/
+// @Access          Private
 const sendMessage = asyncHandler(async (req, res) => {
   const { content, chatId } = req.body;
 
@@ -38,6 +41,9 @@ const sendMessage = asyncHandler(async (req, res) => {
   }
 });
 
+// @Description     Get all messages of a chat
+// @Route           GET /api/chat/:chatId
+// @Access          Private
 const getMessages = asyncHandler(async (req, res) => {
   try {
     const messages = await Message.find({ chat: req.params.chatId })
