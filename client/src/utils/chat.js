@@ -7,7 +7,7 @@ export function getRemoteUser(loggedUser, users) {
 export function isSameUser(messages, m, i, loggedUser) {
   const curMessage = messages[i];
   const nextMessage = messages[i + 1];
-  console.log(m);
+
   return (
     m.sender._id !== loggedUser &&
     curMessage.sender._id !== nextMessage?.sender?._id

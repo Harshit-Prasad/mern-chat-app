@@ -3,9 +3,8 @@ import { toast } from "react-toastify";
 import { useLazyAllUsersQuery } from "../../../slices/api/userSlice";
 import { Button, Form, Offcanvas } from "react-bootstrap";
 import Skeleton from "../Skeleton/Skeleton";
-import SearchIcon from "../../../assets/icons/SearchIcon";
+import Search from "../../../assets/icons/Search";
 import SearchResults from "./SearchResults";
-import Loader from "../Loader/Loader";
 
 export default function SearchSidebar({ show, handleClose }) {
   const [getAllUsers, { isLoading }] = useLazyAllUsersQuery();
@@ -44,7 +43,7 @@ export default function SearchSidebar({ show, handleClose }) {
             placeholder="Search"
           />
           <Button disabled={isLoading} type="submit" className="btn-secondary">
-            <SearchIcon />
+            <Search />
           </Button>
         </Form>
         <div className="pt-2" style={{ backgroundColor: "transparent" }}>
