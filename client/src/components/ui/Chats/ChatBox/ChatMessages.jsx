@@ -18,7 +18,7 @@ export default function ChatMessages({ message, messages }) {
     <div
       ref={chatMessagesRef}
       style={{
-        borderRadius: "1em",
+        borderRadius: "10px",
         overflowY: "auto",
         scrollBehavior: "smooth",
       }}
@@ -67,7 +67,7 @@ export default function ChatMessages({ message, messages }) {
                     backgroundColor: isRemoteUser
                       ? "var(--bs-pink)"
                       : "var(--bs-blue)",
-                    borderRadius: "1em",
+                    borderRadius: "10px",
                     marginLeft:
                       isRemoteUser && addAvatar
                         ? "0"

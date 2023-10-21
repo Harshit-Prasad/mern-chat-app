@@ -120,7 +120,6 @@ export default function ChatBox() {
                   type="text"
                   placeholder="Enter a message"
                   required={true}
-                  className="glass"
                 />
               </Form.Group>
               <Button className="btn-secondary" type="submit">

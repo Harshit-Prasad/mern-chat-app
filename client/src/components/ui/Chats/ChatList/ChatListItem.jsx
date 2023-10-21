@@ -8,7 +8,7 @@ export default function ChatListItem({ onClick, remoteUser, chatId }) {
   return (
     <div
       style={{
-        borderRadius: "1em",
+        borderRadius: "10px",
         gap: "1em",
         outline: chatId === selectedChat?._id ? "2px solid white" : "none",
       }}
