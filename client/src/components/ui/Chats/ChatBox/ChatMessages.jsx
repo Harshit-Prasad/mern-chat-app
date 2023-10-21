@@ -1,13 +1,27 @@
-import React from "react";
-import { isSameUser } from "../../../../utils/chat";
+import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { isSameUser } from "../../../../utils/chat";
 import Avatar from "../../Avatar/Avatar";
 
-export default function ChatMessages({ messages }) {
+export default function ChatMessages({ message, messages }) {
+  const chatMessagesRef = useRef(null);
   const { userInformation } = useSelector((state) => state.authentication);
+
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+    }
+  }, [message, messages]);
+
   return (
     <div
-      style={{ borderRadius: "1em", overflowY: "auto" }}
+      ref={chatMessagesRef}
+      style={{
+        borderRadius: "1em",
+        overflowY: "auto",
+        scrollBehavior: "smooth",
+      }}
       className={`flex-grow-1 glass d-flex flex-grow-1 flex-column m-1 p-1`}
     >
       {messages &&
@@ -15,6 +29,15 @@ export default function ChatMessages({ messages }) {
           const addAvatar = isSameUser(messages, m, i, userInformation._id);
           const isRemoteUser =
             m.sender._id !== userInformation._id && m.sender._id;
+
+          const time = new Date(m.createdAt);
+          const hours = time.getHours();
+          const minutes = time.getMinutes();
+          const isPM = hours > 12;
+          const addZero = minutes < 10;
+          const timeStamp = isPM
+            ? `${hours - 12}:${addZero ? "0" + minutes : minutes} PM`
+            : `${hours}:${minutes} AM`;
 
           return (
             <div
@@ -29,24 +52,34 @@ export default function ChatMessages({ messages }) {
                   size={40}
                 />
               )}
-              <p
-                style={{
-                  margin: "0",
-                  backgroundColor: isRemoteUser
-                    ? "var(--bs-pink)"
-                    : "var(--bs-blue)",
-                  borderRadius: "1em",
-                  marginLeft:
-                    isRemoteUser && addAvatar
-                      ? "0"
-                      : isRemoteUser && !addAvatar
-                      ? "calc(40px + 0.25em"
-                      : "auto",
-                }}
-                className="px-2 py-1"
+              <OverlayTrigger
+                className="glass"
+                placement={isRemoteUser ? "right" : "left"}
+                overlay={
+                  <Tooltip id={m._id}>
+                    <strong>{timeStamp}</strong>
+                  </Tooltip>
+                }
               >
-                {m.content}
-              </p>
+                <p
+                  style={{
+                    margin: "0",
+                    backgroundColor: isRemoteUser
+                      ? "var(--bs-pink)"
+                      : "var(--bs-blue)",
+                    borderRadius: "1em",
+                    marginLeft:
+                      isRemoteUser && addAvatar
+                        ? "0"
+                        : isRemoteUser && !addAvatar
+                        ? "calc(40px + 0.25em"
+                        : "auto",
+                  }}
+                  className="px-2 py-1"
+                >
+                  {m.content}
+                </p>
+              </OverlayTrigger>
             </div>
           );
         })}

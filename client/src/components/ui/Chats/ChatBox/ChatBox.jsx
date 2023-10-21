@@ -106,7 +106,7 @@ export default function ChatBox() {
                 <Loader />
               </div>
             ) : (
-              <ChatMessages messages={messages} />
+              <ChatMessages messages={messages} message={message} />
             )}
             <Form
               className="d-flex w-100 p-1 pt-0"

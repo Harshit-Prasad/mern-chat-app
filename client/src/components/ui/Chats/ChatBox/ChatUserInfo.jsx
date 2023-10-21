@@ -37,7 +37,7 @@ export default function ChatUserInfo({
         <h3>{email}</h3>
         <h4>
           <Badge bg="secondary">
-            User since -{year}-{month}-{date}
+            User since - {year}-{month}-{date}
           </Badge>
         </h4>
       </Modal.Body>
