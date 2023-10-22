@@ -18,12 +18,19 @@ import ChatUserInfoToggle from "./ChatUserInfoToggle";
 import styles from "./ChatBox.module.css";
 import ChatUserInfo from "./ChatUserInfo";
 import { getRemoteUser } from "../../../../utils/chat";
+import io from "socket.io-client";
+
+const ENDPOINT = "http://localhost:5000";
+let socket;
+let selectedChatCompare;
 
 export default function ChatBox() {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [fetchingMessages, setFetchingMessages] = useState(false);
   const [showUserInfo, setShowUserInfo] = useState(false);
+
+  const [socketConnected, setSocketConnected] = useState(false);
 
   const [sendMessage] = useSendMessageMutation();
   const [getMessages] = useLazyGetMessageQuery();
@@ -52,7 +59,7 @@ export default function ChatBox() {
 
       setMessage("");
       const response = await sendMessage(body).unwrap();
-      console.log(response);
+      socket.emit("new-message", response);
       setMessages((previous) => [...previous, response]);
     } catch (error) {
       toast.error(error?.data?.message);
@@ -66,14 +73,37 @@ export default function ChatBox() {
       const response = await getMessages(selectedChat._id).unwrap();
       setMessages(response);
       setFetchingMessages(false);
+
+      socket.emit("join-chat", selectedChat._id);
     } catch (error) {
       toast.error(error?.data?.message);
     }
   }
 
   useEffect(() => {
+    socket = io(ENDPOINT);
+    socket.emit("setup", userInformation);
+    socket.on("connection", () => setSocketConnected(true));
+  }, []);
+
+  useEffect(() => {
     fetchMessages();
+
+    selectedChatCompare = selectedChat;
   }, [selectedChat]);
+
+  useEffect(() => {
+    socket.on("message-recieved", (message) => {
+      if (
+        !selectedChatCompare ||
+        message.chat._id !== selectedChatCompare._id
+      ) {
+        // Notify
+      } else {
+        setMessages([...messages, message]);
+      }
+    });
+  });
 
   return (
     <>
