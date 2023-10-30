@@ -3,30 +3,11 @@ import { Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-
-import Input from "../Input/Input";
-
 import { useSignupMutation } from "../../../../slices/api/userSlice";
 import { setCredentials } from "../../../../slices/state/authenticationSlice";
 import Loader from "../../Loader/Loader";
-
-function getProfileColor() {
-  const colors = [
-    "maroon",
-    "red",
-    "purple",
-    "fuchsia",
-    "green",
-    "lime",
-    "olive",
-    "navy",
-    "blue",
-    "teal",
-  ];
-  const index = Math.round(Math.random() * 9);
-
-  return colors[index];
-}
+import Input from "../Input/Input";
+import { getBgcolor } from "../../../../utils/getBgColor";
 
 export default function Signup() {
   const [name, setName] = useState("");
@@ -45,7 +26,7 @@ export default function Signup() {
       toast.error("Passwords do not match");
     } else {
       try {
-        const bgColor = getProfileColor();
+        const bgColor = getBgcolor();
         const response = await signup({
           name,
           email,
