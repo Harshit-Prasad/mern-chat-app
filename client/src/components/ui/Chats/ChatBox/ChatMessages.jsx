@@ -30,6 +30,7 @@ export default function ChatMessages({ message, messages }) {
           const isRemoteUser =
             m.sender._id !== userInformation._id && m.sender._id;
 
+          // Message timestamp
           const time = new Date(m.createdAt);
           const hours = time.getHours();
           const minutes = time.getMinutes();
@@ -41,9 +42,9 @@ export default function ChatMessages({ message, messages }) {
 
           return (
             <div
+              key={m._id}
               className="d-flex my-1 w-100"
               style={{ gap: "0.25em" }}
-              key={m._id}
             >
               {addAvatar && (
                 <Avatar
@@ -72,7 +73,7 @@ export default function ChatMessages({ message, messages }) {
                       isRemoteUser && addAvatar
                         ? "0"
                         : isRemoteUser && !addAvatar
-                        ? "calc(40px + 0.25em"
+                        ? "calc(40px + 0.25em)"
                         : "auto",
                   }}
                   className="px-2 py-1"

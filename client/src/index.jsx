@@ -16,6 +16,7 @@ import "./styles/global.css";
 import "./styles/bootstrap.css";
 import store from "./store.js";
 import PrivateRoute from "./components/private-route/PrivateRoute.jsx";
+import SocketProvider from "./context/socket.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -30,8 +31,10 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <Provider store={store}>
-      <RouterProvider router={router} />
-    </Provider>
+    <SocketProvider>
+      <Provider store={store}>
+        <RouterProvider router={router} />
+      </Provider>
+    </SocketProvider>
   </React.StrictMode>
 );

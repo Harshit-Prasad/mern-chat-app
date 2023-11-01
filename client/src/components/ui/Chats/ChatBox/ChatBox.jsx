@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Form } from "react-bootstrap";
 import {
   setShowChatList,
   setSelectedChat,
+  setChatList,
 } from "../../../../slices/state/chatSlice";
 import { toast } from "react-toastify";
 import {
@@ -18,10 +19,7 @@ import ChatUserInfoToggle from "./ChatUserInfoToggle";
 import styles from "./ChatBox.module.css";
 import ChatUserInfo from "./ChatUserInfo";
 import { getRemoteUser } from "../../../../utils/chat";
-import io from "socket.io-client";
-
-const ENDPOINT = "http://localhost:5000";
-let socket;
+import { useSocket } from "../../../../context/socket";
 let selectedChatCompare;
 
 export default function ChatBox() {
@@ -29,9 +27,9 @@ export default function ChatBox() {
   const [messages, setMessages] = useState([]);
   const [fetchingMessages, setFetchingMessages] = useState(false);
   const [showUserInfo, setShowUserInfo] = useState(false);
-
   const [socketConnected, setSocketConnected] = useState(false);
 
+  const socket = useSocket();
   const [sendMessage] = useSendMessageMutation();
   const [getMessages] = useLazyGetMessageQuery();
   const { showChatList, chatList, selectedChat } = useSelector(
@@ -61,6 +59,23 @@ export default function ChatBox() {
       const response = await sendMessage(body).unwrap();
       socket.emit("new-message", response);
       setMessages((previous) => [...previous, response]);
+
+      const updatedSelectedChat = { ...selectedChat, latestMessage: response };
+
+      const updatedChatList = chatList.slice();
+      let updatedChatIndex;
+
+      updatedChatList.forEach((chat, i) => {
+        if (chat._id === updatedSelectedChat._id) {
+          updatedChatIndex = i;
+          return;
+        }
+      });
+
+      updatedChatList.splice(updatedChatIndex, 1);
+      updatedChatList.unshift(updatedSelectedChat);
+      console.log(chatList);
+      dispatch(setChatList(updatedChatList));
     } catch (error) {
       toast.error(error?.data?.message);
     }
@@ -80,11 +95,18 @@ export default function ChatBox() {
     }
   }
 
+  const handleConnected = useCallback(() => {
+    setSocketConnected(true);
+  }, [setSocketConnected]);
+
   useEffect(() => {
-    socket = io(ENDPOINT);
     socket.emit("setup", userInformation);
-    socket.on("connection", () => setSocketConnected(true));
-  }, []);
+    socket.on("connected", handleConnected);
+
+    return () => {
+      socket.off("connected", handleConnected);
+    };
+  }, [userInformation, handleConnected]);
 
   useEffect(() => {
     fetchMessages();
@@ -92,8 +114,8 @@ export default function ChatBox() {
     selectedChatCompare = selectedChat;
   }, [selectedChat]);
 
-  useEffect(() => {
-    socket.on("message-recieved", (message) => {
+  const handleMessageReceived = useCallback(
+    (message) => {
       if (
         !selectedChatCompare ||
         message.chat._id !== selectedChatCompare._id
@@ -102,8 +124,17 @@ export default function ChatBox() {
       } else {
         setMessages([...messages, message]);
       }
-    });
-  });
+    },
+    [selectedChatCompare, messages, message, setMessages]
+  );
+
+  useEffect(() => {
+    socket.on("message-recieved", handleMessageReceived);
+
+    return () => {
+      socket.off("message-recieved", handleMessageReceived);
+    };
+  }, [handleMessageReceived]);
 
   return (
     <>
@@ -117,13 +148,15 @@ export default function ChatBox() {
             <h2>
               {chatList.length === 0
                 ? "Find a user and connect..."
-                : "Select a chat..."}
+                : "Start a conversation..."}
             </h2>
           </div>
         ) : (
           <div className="h-100 w-100 d-flex flex-column">
             <div className="d-flex justify-content-between align-items-center mt-1 mx-1">
-              <ChatUserInfoToggle setShowUserInfo={setShowUserInfo} />
+              <div>
+                <ChatUserInfoToggle setShowUserInfo={setShowUserInfo} />
+              </div>
               <Button
                 className="d-block d-md-none btn-secondary"
                 onClick={hideChatBox}
