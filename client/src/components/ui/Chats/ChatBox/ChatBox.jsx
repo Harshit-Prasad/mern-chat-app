@@ -7,6 +7,7 @@ import {
   setChatList,
 } from "../../../../slices/state/chatSlice";
 import { toast } from "react-toastify";
+import Lottie from "lottie-react";
 import {
   useLazyGetMessageQuery,
   useSendMessageMutation,
@@ -20,7 +21,7 @@ import styles from "./ChatBox.module.css";
 import ChatUserInfo from "./ChatUserInfo";
 import { getRemoteUser } from "../../../../utils/chat";
 import { useSocket } from "../../../../context/socket";
-let selectedChatCompare;
+import typingAnimation from "../../../../assets/animations/typing.json";
 
 export default function ChatBox() {
   const [message, setMessage] = useState("");
@@ -28,6 +29,9 @@ export default function ChatBox() {
   const [fetchingMessages, setFetchingMessages] = useState(false);
   const [showUserInfo, setShowUserInfo] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [selectedChatCompare, setSelectedChatCompare] = useState();
 
   const socket = useSocket();
   const [sendMessage] = useSendMessageMutation();
@@ -43,7 +47,7 @@ export default function ChatBox() {
     dispatch(setSelectedChat(null));
   }
 
-  function handleTyping(e) {
+  function handleMessageTyping(e) {
     setMessage(e.target.value);
   }
 
@@ -95,23 +99,73 @@ export default function ChatBox() {
     }
   }
 
+  const handleStopTyping = useCallback(() => {
+    console.log("typing stopped");
+    setIsTyping(false);
+  }, [setIsTyping]);
+
+  useEffect(() => {
+    if (!socketConnected || !selectedChat) {
+      return;
+    }
+
+    if (!message) {
+      socket.emit("stop-typing", selectedChat._id);
+      return;
+    }
+
+    console.log(message);
+
+    console.log(message);
+
+    if (!typing) {
+      setTyping(true);
+      socket.emit("typing", selectedChat._id);
+    }
+
+    const TIMER_LENGTH = 3000;
+    const lastTypingTime = new Date().getTime();
+
+    const timer = setTimeout(() => {
+      const timeNow = new Date().getTime();
+      const timeDifference = timeNow - lastTypingTime;
+
+      if (timeDifference >= TIMER_LENGTH && typing) {
+        socket.emit("stop-typing", selectedChat._id);
+        setTyping(false);
+      }
+    }, TIMER_LENGTH);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [message]);
+
   const handleConnected = useCallback(() => {
     setSocketConnected(true);
   }, [setSocketConnected]);
 
+  const handleStartTyping = useCallback(() => {
+    setIsTyping(true);
+  }, [setIsTyping]);
+
   useEffect(() => {
     socket.emit("setup", userInformation);
     socket.on("connected", handleConnected);
+    socket.on("typing", handleStartTyping);
+    socket.on("stop-typing", handleStopTyping);
 
     return () => {
       socket.off("connected", handleConnected);
+      socket.off("typing", handleStartTyping);
+      socket.off("stop-typing", handleStopTyping);
     };
-  }, [userInformation, handleConnected]);
+  }, [userInformation, handleConnected, handleStartTyping, handleStopTyping]);
 
   useEffect(() => {
     fetchMessages();
 
-    selectedChatCompare = selectedChat;
+    setSelectedChatCompare(selectedChat);
   }, [selectedChat]);
 
   const handleMessageReceived = useCallback(
@@ -154,8 +208,11 @@ export default function ChatBox() {
         ) : (
           <div className="h-100 w-100 d-flex flex-column">
             <div className="d-flex justify-content-between align-items-center mt-1 mx-1">
-              <div>
+              <div className="d-flex" style={{ gap: "1em" }}>
                 <ChatUserInfoToggle setShowUserInfo={setShowUserInfo} />
+                {isTyping && (
+                  <Lottie loop={true} animationData={typingAnimation} />
+                )}
               </div>
               <Button
                 className="d-block d-md-none btn-secondary"
@@ -179,7 +236,7 @@ export default function ChatBox() {
               <Form.Group className="flex-grow-1" controlId="message">
                 <Form.Control
                   value={message}
-                  onChange={handleTyping}
+                  onChange={handleMessageTyping}
                   type="text"
                   placeholder="Enter a message"
                   required={true}

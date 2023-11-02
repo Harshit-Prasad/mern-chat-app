@@ -25,8 +25,6 @@ export default function ChatList() {
     dispatch(setShowChatList(false));
   }
 
-  console.log(chatList);
-
   useEffect(() => {
     (async () => {
       try {
