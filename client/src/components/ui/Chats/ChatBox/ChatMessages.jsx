@@ -65,6 +65,7 @@ export default function ChatMessages({ message, messages }) {
                 <p
                   style={{
                     margin: "0",
+                    maxWidth: "60%",
                     backgroundColor: isRemoteUser
                       ? "var(--bs-pink)"
                       : "var(--bs-blue)",
