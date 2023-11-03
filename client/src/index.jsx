@@ -14,7 +14,7 @@ import Chat from "./pages/Chat.jsx";
 
 import "./styles/global.css";
 import "./styles/bootstrap.css";
-import store from "./store.js";
+import store from "./services/ReduxStore.js";
 import PrivateRoute from "./components/private-route/PrivateRoute.jsx";
 import SocketProvider from "./context/socket.jsx";
 

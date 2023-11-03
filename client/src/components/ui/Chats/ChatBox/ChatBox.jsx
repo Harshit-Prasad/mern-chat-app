@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Form } from "react-bootstrap";
 import {
@@ -15,6 +16,7 @@ import {
 import LeftArrow from "../../../../assets/icons/LeftArrow";
 import Loader from "../../Loader/Loader";
 import Send from "../../../../assets/icons/Send";
+import VideoCall from "../../../../assets/icons/VideoCall";
 import ChatMessages from "./ChatMessages";
 import ChatUserInfoToggle from "./ChatUserInfoToggle";
 import styles from "./ChatBox.module.css";
@@ -22,8 +24,10 @@ import ChatUserInfo from "./ChatUserInfo";
 import { getRemoteUser } from "../../../../utils/chat";
 import { useSocket } from "../../../../context/socket";
 import typingAnimation from "../../../../assets/animations/typing.json";
+import MediaCallOverlay from "./MediaCallOverlay";
 
 export default function ChatBox() {
+  // messaging states
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [fetchingMessages, setFetchingMessages] = useState(false);
@@ -33,6 +37,10 @@ export default function ChatBox() {
   const [isTyping, setIsTyping] = useState(false);
   const [selectedChatCompare, setSelectedChatCompare] = useState();
 
+  // video-calling states
+  const [videoCallDisplay, setVideoCallDisplay] = useState(false);
+
+  // messaging API channels
   const socket = useSocket();
   const [sendMessage] = useSendMessageMutation();
   const [getMessages] = useLazyGetMessageQuery();
@@ -42,6 +50,7 @@ export default function ChatBox() {
   const { userInformation } = useSelector((state) => state.authentication);
   const dispatch = useDispatch();
 
+  // messaging events
   function hideChatBox() {
     dispatch(setShowChatList(true));
     dispatch(setSelectedChat(null));
@@ -208,8 +217,16 @@ export default function ChatBox() {
         ) : (
           <div className="h-100 w-100 d-flex flex-column">
             <div className="d-flex justify-content-between align-items-center mt-1 mx-1">
-              <div className="d-flex" style={{ gap: "1em" }}>
+              <div className="d-flex" style={{ gap: "0.5em" }}>
                 <ChatUserInfoToggle setShowUserInfo={setShowUserInfo} />
+                <Button
+                  className="d-block d-md-none btn-secondary"
+                  onClick={() => {
+                    setVideoCallDisplay(true);
+                  }}
+                >
+                  <VideoCall />
+                </Button>
                 {isTyping && (
                   <Lottie loop={true} animationData={typingAnimation} />
                 )}
@@ -255,6 +272,10 @@ export default function ChatBox() {
           showUserInfo={showUserInfo}
           selectedChat={getRemoteUser(userInformation, selectedChat.users)}
         />
+      )}
+      {createPortal(
+        <MediaCallOverlay display={videoCallDisplay}></MediaCallOverlay>,
+        document.getElementById("video-call-window")
       )}
     </>
   );

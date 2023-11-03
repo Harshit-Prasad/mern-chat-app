@@ -9,7 +9,7 @@ export default function VoiceCall() {
         width="16"
         height="16"
         fill="currentColor"
-        class="bi bi-telephone-fill position-absolute w-100 h-100 top-0 start-0"
+        className="bi bi-telephone-fill position-absolute w-100 h-100 top-0 start-0"
         viewBox="0 0 16 16"
       >
         <path

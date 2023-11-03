@@ -9,7 +9,7 @@ export default function VideoCall() {
         width="16"
         height="16"
         fill="currentColor"
-        class="bi bi-camera-reels-fill position-absolute w-100 h-100 top-0 start-0"
+        className="bi bi-camera-reels-fill position-absolute w-100 h-100 top-0 start-0"
         viewBox="0 0 16 16"
       >
         <path d="M6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
