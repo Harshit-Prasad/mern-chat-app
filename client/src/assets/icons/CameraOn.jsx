@@ -1,13 +1,11 @@
 import React from "react";
 import Container from "../Container";
 
-export default function VideoCall() {
+export default function CameraOn() {
   return (
-    <Container>
+    <Container full>
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
         fill="currentColor"
         className="bi bi-camera-video-fill position-absolute w-100 h-100 top-0 start-0"
         viewBox="0 0 16 16"

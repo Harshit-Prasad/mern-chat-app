@@ -7,14 +7,14 @@ export default function MediaCallOverlay({ children, display }) {
     <div
       className={`h-100 w-100 d-${
         display ? "flex" : "none"
-      } justify-content-center align-items-center`}
+      } justify-content-center align-items-center flex-column`}
       style={{
         position: "absolute",
         top: 0,
         left: 0,
         bottom: 0,
         right: 0,
-        backgroundColor: "rgba(0,0,0,0.5)",
+        backgroundColor: "rgba(255, 255, 255, 0.5)",
       }}
     >
       {children}

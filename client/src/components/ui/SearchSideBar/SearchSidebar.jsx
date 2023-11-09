@@ -17,7 +17,6 @@ export default function SearchSidebar({ show, handleClose }) {
     try {
       setSearch("");
       const response = await getAllUsers(search).unwrap();
-      console.log(response);
       setSearchResult(response);
     } catch (error) {
       toast.error(error?.response?.data?.message);

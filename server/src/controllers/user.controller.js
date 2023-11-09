@@ -6,7 +6,6 @@ import getJWT from "../config/jwt.js";
 // @Route           POST /api/user/
 // @Access          Public
 const registerUser = asyncHandler(async (req, res) => {
-  console.log(req.body);
   const { name, email, password, bgColor } = req.body;
 
   if (!name || !email || !password) {

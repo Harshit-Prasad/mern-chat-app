@@ -1,9 +1,9 @@
 import React from "react";
 import Container from "../Container";
 
-export default function Close() {
+export default function Close({ full = false }) {
   return (
-    <Container>
+    <Container full={full}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"

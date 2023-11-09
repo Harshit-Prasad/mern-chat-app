@@ -1,10 +1,10 @@
 import React from "react";
 
-export default function Container({ children }) {
+export default function Container({ children, full }) {
   return (
     <div
       className="position-relative"
-      style={{ width: "20px", height: "20px" }}
+      style={{ width: full ? "100%" : "20px", height: full ? "100%" : "20px" }}
     >
       {children}
     </div>

@@ -13,20 +13,27 @@ class WebRTCPeer {
   }
 
   async getOffer() {
-    const offer = await this.peer.createOffer();
-    await this.peer.setLocalDescription(new RTCSessionDescription(offer));
+    if (this.peer) {
+      const offer = await this.peer.createOffer();
+      await this.peer.setLocalDescription(new RTCSessionDescription(offer));
+      return offer;
+    }
   }
 
-  async getAnswer() {
-    await this.peer.setRemoteDescription(offer);
-    const answer = await this.peer.createAnswer();
-    await this.peer.setLocalDescription(new RTCSessionDescription(answer));
-    return answer;
+  async getAnswer(offer) {
+    if (this.peer) {
+      await this.peer.setRemoteDescription(offer);
+      const answer = await this.peer.createAnswer();
+      await this.peer.setLocalDescription(new RTCSessionDescription(answer));
+      return answer;
+    }
   }
 
   async setLocalDescription(answer) {
-    await this.peer.setRemoteDescription(new RTCSessionDescription(answer));
+    if (this.peer) {
+      await this.peer.setRemoteDescription(new RTCSessionDescription(answer));
+    }
   }
 }
 
-export default new WebRTCPeer();
+export default WebRTCPeer;

@@ -45,9 +45,10 @@ io.on("connection", (socket) => {
 
   socket.on("join-chat", (room) => {
     socket.join(room);
-    console.log("User join room: ", room);
+    socket.in(room).emit("remote-user-joined", { from: socket.id });
   });
 
+  // Real time typing indicator
   socket.on("typing", (room) => {
     socket.in(room).emit("typing");
   });
@@ -56,6 +57,7 @@ io.on("connection", (socket) => {
     socket.in(room).emit("stop-typing");
   });
 
+  // Real time messaging
   socket.on("new-message", (message) => {
     let chat = message.chat;
 
@@ -66,5 +68,34 @@ io.on("connection", (socket) => {
 
       socket.in(user._id).emit("message-recieved", message);
     });
+  });
+
+  // Video Calling
+  socket.on("local-user-joined", ({ to }) => {
+    io.to(to).emit("local-user-joined", { from: socket.id });
+  });
+
+  socket.on("call-remote-user", ({ to, offer }) => {
+    io.to(to).emit("incoming-call", { from: socket.id, offer });
+  });
+
+  socket.on("call-accepted", ({ answer, to }) => {
+    io.to(to).emit("call-accepted", { from: socket.id, answer });
+  });
+
+  socket.on("call-rejected", ({ to }) => {
+    io.to(to).emit("call-rejected");
+  });
+
+  socket.on("nego-needed", ({ offer, to }) => {
+    io.to(to).emit("nego-incoming", { from: socket.id, offer });
+  });
+
+  socket.on("nego-done", ({ answer, to }) => {
+    io.to(to).emit("nego-final", { from: to, answer });
+  });
+
+  socket.on("end-call", ({ to }) => {
+    io.to(to).emit("call-ended");
   });
 });

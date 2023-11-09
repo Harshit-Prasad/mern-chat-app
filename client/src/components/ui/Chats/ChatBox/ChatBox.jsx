@@ -2,29 +2,37 @@ import React, { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Form } from "react-bootstrap";
+import Lottie from "lottie-react";
+import ReactPlayer from "react-player";
 import {
   setShowChatList,
   setSelectedChat,
   setChatList,
 } from "../../../../slices/state/chatSlice";
 import { toast } from "react-toastify";
-import Lottie from "lottie-react";
 import {
   useLazyGetMessageQuery,
   useSendMessageMutation,
 } from "../../../../slices/api/messageSlice";
-import LeftArrow from "../../../../assets/icons/LeftArrow";
-import Loader from "../../Loader/Loader";
-import Send from "../../../../assets/icons/Send";
-import VideoCall from "../../../../assets/icons/VideoCall";
+import { useSocket } from "../../../../context/socket";
+import CallWindow from "../CallWindow/CallWindow";
 import ChatMessages from "./ChatMessages";
 import ChatUserInfoToggle from "./ChatUserInfoToggle";
-import styles from "./ChatBox.module.css";
 import ChatUserInfo from "./ChatUserInfo";
+import Loader from "../../Loader/Loader";
+import LeftArrow from "../../../../assets/icons/LeftArrow";
+import MicMute from "../../../../assets/icons/MicMute";
+import MicUnmute from "../../../../assets/icons/MicUnmute";
+import CameraOn from "../../../../assets/icons/CameraOn";
+import CameraOff from "../../../../assets/icons/CameraOff";
+import Send from "../../../../assets/icons/Send";
+import VideoCall from "../../../../assets/icons/VideoCall";
 import { getRemoteUser } from "../../../../utils/chat";
-import { useSocket } from "../../../../context/socket";
 import typingAnimation from "../../../../assets/animations/typing.json";
-import MediaCallOverlay from "./MediaCallOverlay";
+import WebRTCPeer from "../../../../services/WebRTCPeer";
+
+import styles from "./ChatBox.module.css";
+import Close from "../../../../assets/icons/Close";
 
 export default function ChatBox() {
   // messaging states
@@ -38,7 +46,14 @@ export default function ChatBox() {
   const [selectedChatCompare, setSelectedChatCompare] = useState();
 
   // video-calling states
+  const [webRTCPeer, setWebRTCPeer] = useState(new WebRTCPeer());
+  const [remoteUserID, setRemoteUserID] = useState();
+  const [localStream, setLocalStream] = useState();
+  const [remoteStream, setRemoteStream] = useState();
+  const [muted, setMuted] = useState(false);
+  const [playing, setPlaying] = useState(true);
   const [videoCallDisplay, setVideoCallDisplay] = useState(false);
+  const [incomingVideoCall, setIncomingVideoCall] = useState(false);
 
   // messaging API channels
   const socket = useSocket();
@@ -87,7 +102,6 @@ export default function ChatBox() {
 
       updatedChatList.splice(updatedChatIndex, 1);
       updatedChatList.unshift(updatedSelectedChat);
-      console.log(chatList);
       dispatch(setChatList(updatedChatList));
     } catch (error) {
       toast.error(error?.data?.message);
@@ -108,8 +122,12 @@ export default function ChatBox() {
     }
   }
 
+  const handleConnected = useCallback(() => {
+    setSocketConnected(true);
+  }, [setSocketConnected]);
+
+  // Typing indicator logic
   const handleStopTyping = useCallback(() => {
-    console.log("typing stopped");
     setIsTyping(false);
   }, [setIsTyping]);
 
@@ -122,10 +140,6 @@ export default function ChatBox() {
       socket.emit("stop-typing", selectedChat._id);
       return;
     }
-
-    console.log(message);
-
-    console.log(message);
 
     if (!typing) {
       setTyping(true);
@@ -150,17 +164,16 @@ export default function ChatBox() {
     };
   }, [message]);
 
-  const handleConnected = useCallback(() => {
-    setSocketConnected(true);
-  }, [setSocketConnected]);
-
   const handleStartTyping = useCallback(() => {
     setIsTyping(true);
   }, [setIsTyping]);
 
+  // Socket connections
   useEffect(() => {
+    // Connection setup
     socket.emit("setup", userInformation);
     socket.on("connected", handleConnected);
+    // Typing indicator logic
     socket.on("typing", handleStartTyping);
     socket.on("stop-typing", handleStopTyping);
 
@@ -177,6 +190,7 @@ export default function ChatBox() {
     setSelectedChatCompare(selectedChat);
   }, [selectedChat]);
 
+  // Real time messaging
   const handleMessageReceived = useCallback(
     (message) => {
       if (
@@ -197,7 +211,220 @@ export default function ChatBox() {
     return () => {
       socket.off("message-recieved", handleMessageReceived);
     };
-  }, [handleMessageReceived]);
+  });
+
+  // Making video call
+  const handleRemoteUserJoined = useCallback(
+    ({ from }) => {
+      setRemoteUserID(from);
+      socket.emit("local-user-joined", { to: from });
+    },
+    [setRemoteUserID]
+  );
+
+  const handleLocalUserJoined = useCallback(
+    ({ from }) => {
+      setRemoteUserID(from);
+    },
+    [setRemoteUserID]
+  );
+
+  const handleCallRemoteUser = useCallback(async () => {
+    if (remoteUserID) {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      setLocalStream(stream);
+      const offer = await webRTCPeer.getOffer();
+      socket.emit("call-remote-user", { to: remoteUserID, offer });
+      setVideoCallDisplay(true);
+    } else {
+      toast.error("User is inactive");
+    }
+  }, [remoteUserID, webRTCPeer]);
+
+  const handleIncomingCall = useCallback(
+    async ({ from, offer }) => {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      setLocalStream(stream);
+      const answer = await webRTCPeer.getAnswer(offer);
+      socket.emit("call-accepted", { answer, to: from });
+      setIncomingVideoCall(true);
+    },
+    [setLocalStream, webRTCPeer, setIncomingVideoCall]
+  );
+
+  const sendStream = useCallback(() => {
+    for (const track of localStream.getTracks()) {
+      webRTCPeer.peer.addTrack(track, localStream);
+    }
+  }, [localStream, webRTCPeer]);
+
+  const handleCallAccepted = useCallback(
+    async ({ from, answer }) => {
+      await webRTCPeer.setLocalDescription(answer);
+      sendStream();
+    },
+    [sendStream, webRTCPeer]
+  );
+
+  const handleCallRejected = useCallback(() => {
+    const tracks = localStream.getTracks();
+    tracks.forEach((track) => {
+      track.stop();
+    });
+
+    webRTCPeer.peer.close();
+    setWebRTCPeer(new WebRTCPeer());
+    setVideoCallDisplay(false);
+  }, [webRTCPeer, localStream]);
+
+  const handleAnswerCall = useCallback(() => {
+    sendStream();
+    setVideoCallDisplay(true);
+    setIncomingVideoCall(false);
+  }, [sendStream, setVideoCallDisplay]);
+
+  const handleRejectCall = useCallback(() => {
+    const tracks = localStream.getTracks();
+    tracks.forEach((track) => {
+      track.stop();
+    });
+    socket.emit("call-rejected", { to: remoteUserID });
+    webRTCPeer.peer.close();
+    setWebRTCPeer(new WebRTCPeer());
+    setIncomingVideoCall(false);
+  }, [remoteUserID, webRTCPeer, localStream]);
+
+  const handleNegotiationNeeded = useCallback(
+    async (e) => {
+      const offer = await webRTCPeer.getOffer();
+      socket.emit("nego-needed", { offer, to: remoteUserID });
+    },
+    [webRTCPeer, remoteUserID]
+  );
+
+  const handleNegotiationIncoming = useCallback(
+    async ({ from, offer }) => {
+      const answer = await webRTCPeer.getAnswer(offer);
+      socket.emit("nego-done", { to: from, answer });
+    },
+    [webRTCPeer]
+  );
+
+  const handleNegotiationFinal = useCallback(
+    async ({ answer }) => {
+      await webRTCPeer.setLocalDescription(answer);
+    },
+    [webRTCPeer]
+  );
+
+  const handleIncomingTracks = useCallback(
+    (e) => {
+      const [stream] = e.streams;
+      setRemoteStream(stream);
+    },
+    [setRemoteStream]
+  );
+
+  // Media Controls
+  const handleEndVideoCall = useCallback(() => {
+    const tracks = localStream.getTracks();
+    tracks.forEach((track) => {
+      track.stop();
+    });
+    setRemoteStream(null);
+    webRTCPeer.peer.close();
+    setVideoCallDisplay(false);
+    socket.emit("end-call", { to: remoteUserID });
+    setWebRTCPeer(new WebRTCPeer());
+  }, [webRTCPeer, localStream, remoteUserID]);
+
+  const handleVideoCallEnded = useCallback(() => {
+    const tracks = localStream.getTracks();
+    tracks.forEach((track) => {
+      track.stop();
+    });
+    setRemoteStream(null);
+    webRTCPeer.peer.close();
+    setVideoCallDisplay(false);
+    setWebRTCPeer(new WebRTCPeer());
+  }, [webRTCPeer, localStream, remoteUserID]);
+
+  useEffect(() => {
+    if (!localStream) return;
+
+    const audioTrack = localStream
+      .getTracks()
+      .find((track) => track.kind === "audio");
+    audioTrack.enabled = !muted;
+  }, [muted, localStream]);
+
+  useEffect(() => {
+    if (!localStream) return;
+
+    const videoTrack = localStream
+      .getTracks()
+      .find((track) => track.kind === "video");
+    videoTrack.enabled = playing;
+  }, [localStream, playing]);
+
+  useEffect(() => {
+    socket.on("remote-user-joined", handleRemoteUserJoined);
+    socket.on("local-user-joined", handleLocalUserJoined);
+    socket.on("incoming-call", handleIncomingCall);
+    socket.on("call-accepted", handleCallAccepted);
+    socket.on("call-rejected", handleCallRejected);
+    socket.on("nego-incoming", handleNegotiationIncoming);
+    socket.on("nego-final", handleNegotiationFinal);
+    socket.on("call-ended", handleVideoCallEnded);
+
+    webRTCPeer.peer.addEventListener(
+      "negotiationneeded",
+      handleNegotiationNeeded
+    );
+
+    webRTCPeer.peer.addEventListener("track", handleIncomingTracks);
+
+    return () => {
+      socket.off("remote-user-joined", handleRemoteUserJoined);
+      socket.off("local-user-joined", handleLocalUserJoined);
+      socket.off("incoming-call", handleIncomingCall);
+      socket.off("call-accepted", handleCallAccepted);
+      socket.off("call-rejected", handleCallRejected);
+      socket.off("nego-incoming", handleNegotiationIncoming);
+      socket.off("nego-final", handleNegotiationFinal);
+      socket.off("call-ended", handleVideoCallEnded);
+
+      webRTCPeer.peer.removeEventListener(
+        "negotiationneeded",
+        handleNegotiationNeeded
+      );
+
+      webRTCPeer.peer.removeEventListener("track", handleIncomingTracks);
+    };
+  }, [
+    handleRemoteUserJoined,
+    handleLocalUserJoined,
+    handleIncomingCall,
+    handleCallAccepted,
+    handleCallRejected,
+    handleNegotiationIncoming,
+    handleNegotiationFinal,
+    handleNegotiationNeeded,
+    handleIncomingTracks,
+    handleVideoCallEnded,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      setRemoteUserID(null);
+    };
+  }, [selectedChat]);
 
   return (
     <>
@@ -220,10 +447,9 @@ export default function ChatBox() {
               <div className="d-flex" style={{ gap: "0.5em" }}>
                 <ChatUserInfoToggle setShowUserInfo={setShowUserInfo} />
                 <Button
-                  className="d-block d-md-none btn-secondary"
-                  onClick={() => {
-                    setVideoCallDisplay(true);
-                  }}
+                  className="d-block btn-secondary"
+                  onClick={handleCallRemoteUser}
+                  disabled={incomingVideoCall}
                 >
                   <VideoCall />
                 </Button>
@@ -231,13 +457,23 @@ export default function ChatBox() {
                   <Lottie loop={true} animationData={typingAnimation} />
                 )}
               </div>
-              <Button
-                className="d-block d-md-none btn-secondary"
-                onClick={hideChatBox}
-              >
+              <Button className="d-block btn-secondary" onClick={hideChatBox}>
                 <LeftArrow />
               </Button>
             </div>
+            {incomingVideoCall && (
+              <div
+                style={{ borderRadius: "0.5em" }}
+                className="glass m-1 mb-0 p-1 d-flex justify-content-evenly align-items-center"
+              >
+                <Button className="btn-primary" onClick={handleRejectCall}>
+                  Reject
+                </Button>
+                <Button className="btn-secondary" onClick={handleAnswerCall}>
+                  Answer
+                </Button>
+              </div>
+            )}
             {fetchingMessages ? (
               <div className="h-100 d-flex justify-content-center align-items-center">
                 <Loader />
@@ -274,7 +510,89 @@ export default function ChatBox() {
         />
       )}
       {createPortal(
-        <MediaCallOverlay display={videoCallDisplay}></MediaCallOverlay>,
+        <CallWindow display={videoCallDisplay}>
+          <div className="d-flex align-items-center justify-content-evenly flex-column flex-md-row">
+            <div
+              style={{
+                maxWidth: "min(100%, 400px)",
+                aspectRatio: "4 / 3",
+                borderRadius: "1em",
+                overflow: "hidden",
+              }}
+            >
+              <>
+                {localStream && (
+                  <ReactPlayer
+                    height="100%"
+                    width="100%"
+                    playing
+                    playsinline
+                    url={localStream}
+                  />
+                )}
+              </>
+            </div>
+            {"You"}
+            <div
+              style={{
+                maxWidth: "min(100%, 400px)",
+                aspectRatio: "4 / 3",
+                overflow: "hidden",
+                borderRadius: "1em",
+              }}
+            >
+              {remoteStream && (
+                <>
+                  <ReactPlayer
+                    height="100%"
+                    width="100%"
+                    playing
+                    playsinline
+                    url={remoteStream}
+                  />
+                  {"Remote User"}
+                </>
+              )}
+            </div>
+          </div>
+          <div>
+            <Button
+              style={{
+                height: "75px",
+                width: "75px",
+                borderRadius: "50%",
+              }}
+              onClick={() => {
+                setMuted((previous) => !previous);
+              }}
+            >
+              {muted ? <MicMute /> : <MicUnmute />}
+            </Button>
+            <Button
+              style={{
+                height: "75px",
+                width: "75px",
+                borderRadius: "50%",
+              }}
+              onClick={() => {
+                setPlaying((previous) => !previous);
+              }}
+            >
+              {playing ? <CameraOn /> : <CameraOff />}
+            </Button>
+            <Button
+              style={{
+                height: "75px",
+                width: "75px",
+                borderRadius: "50%",
+                backgroundColor: "red",
+              }}
+              onClick={handleEndVideoCall}
+            >
+              <Close full />
+            </Button>
+          </div>
+        </CallWindow>,
         document.getElementById("video-call-window")
       )}
     </>
