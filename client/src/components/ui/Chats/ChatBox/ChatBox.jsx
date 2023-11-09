@@ -197,12 +197,32 @@ export default function ChatBox() {
         !selectedChatCompare ||
         message.chat._id !== selectedChatCompare._id
       ) {
-        // Notify
+        const messageChatID = message.chat._id;
+        const messageChat = chatList.find((chat) => {
+          return chat._id === messageChatID;
+        });
+        console.log(messageChat, message);
+        const updateMessageChat = { ...messageChat };
+        updateMessageChat.latestMessage = { ...message };
+
+        const updateChatList = chatList.slice();
+        let updatedChatIndex;
+
+        updateChatList.forEach((chat, i) => {
+          if (chat._id === messageChatID) {
+            updatedChatIndex = i;
+            return;
+          }
+        });
+
+        updateChatList.splice(updatedChatIndex, 1);
+        updateChatList.unshift(updateMessageChat);
+        dispatch(setChatList(updateChatList));
       } else {
         setMessages([...messages, message]);
       }
     },
-    [selectedChatCompare, messages, message, setMessages]
+    [selectedChatCompare, messages, message, setMessages, chatList]
   );
 
   useEffect(() => {
