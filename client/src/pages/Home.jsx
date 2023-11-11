@@ -18,8 +18,8 @@ export default function Home() {
       <Main>
         <div className="h-100 d-flex justify-content-center align-items-center flex-column m-md-0">
           <div
-            style={{ borderRadius: "1em" }}
-            className="glass p-lg-2 p-2 m-2 d-flex justify-content-center align-items-center flex-column"
+            style={{ borderRadius: "1em", overflow: "auto" }}
+            className="glass p-lg-2 p-2 m-2 d-flex flex-grow-1 flex-sm-grow-0 align-items-center flex-column"
           >
             {userInformation ? <Card /> : <Forms />}
           </div>

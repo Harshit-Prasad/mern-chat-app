@@ -17,8 +17,6 @@ import {
 import { useSocket } from "../../../../context/socket";
 import CallWindow from "../CallWindow/CallWindow";
 import ChatMessages from "./ChatMessages";
-import ChatUserInfoToggle from "./ChatUserInfoToggle";
-import ChatUserInfo from "./ChatUserInfo";
 import Loader from "../../Loader/Loader";
 import LeftArrow from "../../../../assets/icons/LeftArrow";
 import MicMute from "../../../../assets/icons/MicMute";
@@ -33,13 +31,13 @@ import WebRTCPeer from "../../../../services/WebRTCPeer";
 
 import styles from "./ChatBox.module.css";
 import Close from "../../../../assets/icons/Close";
+import Avatar from "../../Avatar/Avatar";
 
 export default function ChatBox() {
   // messaging states
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [fetchingMessages, setFetchingMessages] = useState(false);
-  const [showUserInfo, setShowUserInfo] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
   const [typing, setTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -465,7 +463,17 @@ export default function ChatBox() {
           <div className="h-100 w-100 d-flex flex-column">
             <div className="d-flex justify-content-between align-items-center mt-1 mx-1">
               <div className="d-flex" style={{ gap: "0.5em" }}>
-                <ChatUserInfoToggle setShowUserInfo={setShowUserInfo} />
+                {selectedChat && (
+                  <Avatar
+                    name={
+                      getRemoteUser(userInformation, selectedChat.users).name
+                    }
+                    bgColor={
+                      getRemoteUser(userInformation, selectedChat.users).bgColor
+                    }
+                    size={50}
+                  />
+                )}
                 <Button
                   className="d-block btn-secondary"
                   onClick={handleCallRemoteUser}
@@ -477,7 +485,10 @@ export default function ChatBox() {
                   <Lottie loop={true} animationData={typingAnimation} />
                 )}
               </div>
-              <Button className="d-block btn-secondary" onClick={hideChatBox}>
+              <Button
+                className="d-block d-md-none btn-secondary"
+                onClick={hideChatBox}
+              >
                 <LeftArrow />
               </Button>
             </div>
@@ -522,13 +533,7 @@ export default function ChatBox() {
           </div>
         )}
       </div>
-      {selectedChat && (
-        <ChatUserInfo
-          setShowUserInfo={setShowUserInfo}
-          showUserInfo={showUserInfo}
-          selectedChat={getRemoteUser(userInformation, selectedChat.users)}
-        />
-      )}
+
       {createPortal(
         <CallWindow display={videoCallDisplay}>
           <div className="d-flex align-items-center justify-content-evenly flex-column flex-md-row">
