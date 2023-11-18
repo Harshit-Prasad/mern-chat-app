@@ -15,8 +15,8 @@ import {
   useSendMessageMutation,
 } from "../../../../slices/api/messageSlice";
 import { useSocket } from "../../../../context/socket";
-import CallWindow from "../CallWindow/CallWindow";
-import ChatMessages from "./ChatMessages";
+import CallWindow from "./media-components/CallWindow";
+import ChatMessages from "./chat-messages/ChatMessages";
 import Loader from "../../Loader/Loader";
 import LeftArrow from "../../../../assets/icons/LeftArrow";
 import MicMute from "../../../../assets/icons/MicMute";
@@ -232,6 +232,21 @@ export default function ChatBox() {
   });
 
   // Making video call
+  const handleError = useCallback(() => {
+    socket.emit("error", { to: remoteUserID });
+    setVideoCallDisplay(false);
+    if (localStream) {
+      const tracks = localStream.getTracks();
+      tracks.forEach((track) => {
+        track.stop();
+      });
+      setLocalStream(null);
+    }
+    webRTCPeer.peer.close();
+    setWebRTCPeer(new WebRTCPeer());
+    toast.error("Something went wrong, Try again");
+  }, [localStream, remoteUserID, webRTCPeer]);
+
   const handleRemoteUserJoined = useCallback(
     ({ from }) => {
       setRemoteUserID(from);
@@ -247,21 +262,27 @@ export default function ChatBox() {
     [setRemoteUserID]
   );
 
+  // async
   const handleCallRemoteUser = useCallback(async () => {
     if (remoteUserID) {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      setLocalStream(stream);
-      const offer = await webRTCPeer.getOffer();
-      socket.emit("call-remote-user", { to: remoteUserID, offer });
-      setVideoCallDisplay(true);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+        setLocalStream(stream);
+        const offer = await webRTCPeer.getOffer();
+        socket.emit("call-remote-user", { to: remoteUserID, offer });
+        setVideoCallDisplay(true);
+      } catch (error) {
+        handleError();
+      }
     } else {
       toast.error("User is inactive");
     }
-  }, [remoteUserID, webRTCPeer]);
+  }, [remoteUserID, webRTCPeer, localStream, handleError]);
 
+  // async
   const handleIncomingCall = useCallback(
     async ({ from, offer }) => {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -282,6 +303,7 @@ export default function ChatBox() {
     }
   }, [localStream, webRTCPeer]);
 
+  // async
   const handleCallAccepted = useCallback(
     async ({ from, answer }) => {
       await webRTCPeer.setLocalDescription(answer);
@@ -318,27 +340,42 @@ export default function ChatBox() {
     setIncomingVideoCall(false);
   }, [remoteUserID, webRTCPeer, localStream]);
 
+  // async
   const handleNegotiationNeeded = useCallback(
     async (e) => {
-      const offer = await webRTCPeer.getOffer();
-      socket.emit("nego-needed", { offer, to: remoteUserID });
+      try {
+        const offer = await webRTCPeer.getOffer();
+        socket.emit("nego-needed", { offer, to: remoteUserID });
+      } catch (error) {
+        handleError();
+      }
     },
-    [webRTCPeer, remoteUserID]
+    [webRTCPeer, remoteUserID, handleError]
   );
 
+  // async
   const handleNegotiationIncoming = useCallback(
     async ({ from, offer }) => {
-      const answer = await webRTCPeer.getAnswer(offer);
-      socket.emit("nego-done", { to: from, answer });
+      try {
+        const answer = await webRTCPeer.getAnswer(offer);
+        socket.emit("nego-done", { to: from, answer });
+      } catch (error) {
+        handleError;
+      }
     },
-    [webRTCPeer]
+    [webRTCPeer, handleError]
   );
 
+  // async
   const handleNegotiationFinal = useCallback(
     async ({ answer }) => {
-      await webRTCPeer.setLocalDescription(answer);
+      try {
+        await webRTCPeer.setLocalDescription(answer);
+      } catch (error) {
+        handleError;
+      }
     },
-    [webRTCPeer]
+    [webRTCPeer, handleError]
   );
 
   const handleIncomingTracks = useCallback(
@@ -373,6 +410,21 @@ export default function ChatBox() {
     setWebRTCPeer(new WebRTCPeer());
   }, [webRTCPeer, localStream, remoteUserID]);
 
+  const handleErrorOccured = useCallback(() => {
+    if (localStream) {
+      const tracks = localStream.getTracks();
+      tracks.forEach((track) => {
+        track.stop();
+      });
+    }
+
+    setRemoteStream(null);
+    setVideoCallDisplay(false);
+    webRTCPeer.peer.close();
+    setWebRTCPeer(new WebRTCPeer());
+    toast.error("Something went wrong, Try again");
+  }, [webRTCPeer, localStream, remoteUserID]);
+
   useEffect(() => {
     if (!localStream) return;
 
@@ -400,6 +452,7 @@ export default function ChatBox() {
     socket.on("nego-incoming", handleNegotiationIncoming);
     socket.on("nego-final", handleNegotiationFinal);
     socket.on("call-ended", handleVideoCallEnded);
+    socket.on("error-occured", handleErrorOccured);
 
     webRTCPeer.peer.addEventListener(
       "negotiationneeded",
@@ -407,6 +460,10 @@ export default function ChatBox() {
     );
 
     webRTCPeer.peer.addEventListener("track", handleIncomingTracks);
+
+    // webRTCPeer.peer.addEventListener("icecandidate", (e) => {
+    //   console.log(e.candidate);
+    // });
 
     return () => {
       socket.off("remote-user-joined", handleRemoteUserJoined);
@@ -417,6 +474,7 @@ export default function ChatBox() {
       socket.off("nego-incoming", handleNegotiationIncoming);
       socket.off("nego-final", handleNegotiationFinal);
       socket.off("call-ended", handleVideoCallEnded);
+      socket.off("error-occured", handleErrorOccured);
 
       webRTCPeer.peer.removeEventListener(
         "negotiationneeded",
@@ -436,6 +494,7 @@ export default function ChatBox() {
     handleNegotiationNeeded,
     handleIncomingTracks,
     handleVideoCallEnded,
+    handleErrorOccured,
   ]);
 
   useEffect(() => {
@@ -557,7 +616,7 @@ export default function ChatBox() {
                 )}
               </>
             </div>
-            {"You"}
+
             <div
               style={{
                 maxWidth: "min(100%, 400px)",

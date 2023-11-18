@@ -1,6 +1,6 @@
-import React, { Children } from "react";
+import React from "react";
 
-export default function MediaCallOverlay({ children, display }) {
+export default function CallWindow({ children, display }) {
   if (!display) return;
 
   return (

@@ -98,4 +98,8 @@ io.on("connection", (socket) => {
   socket.on("end-call", ({ to }) => {
     io.to(to).emit("call-ended");
   });
+
+  socket.on("error", ({ to }) => {
+    io.to(to).emit("error-occured");
+  });
 });

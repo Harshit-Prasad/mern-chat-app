@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { isSameUser } from "../../../../utils/chat";
-import Avatar from "../../Avatar/Avatar";
+import { isSameUser } from "../../../../../utils/chat";
+import Avatar from "../../../Avatar/Avatar";
 
 export default function ChatMessages({ message, messages }) {
   const chatMessagesRef = useRef(null);
