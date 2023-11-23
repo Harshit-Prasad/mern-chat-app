@@ -9,18 +9,10 @@ const getNotifications = asyncHandler(async (req, res) => {
     const { user } = req;
     const notifications = await Notification.find({
       to: user._id,
-    })
-      .populate({
-        path: "for",
-        populate: {
-          path: "sender",
-          select: "-password",
-        },
-      })
-      .populate({
-        path: "to",
-        select: "name bgColor",
-      });
+    }).populate({
+      path: "from",
+      select: "name bgColor",
+    });
 
     res.status(200).json(notifications);
   } catch (error) {
@@ -34,13 +26,21 @@ const getNotifications = asyncHandler(async (req, res) => {
 // @Access          Private
 const sendNotification = asyncHandler(async (req, res) => {
   try {
-    const { message, userId } = req.body;
+    const { from, to } = req.body;
 
-    const newNotification = {
-      for: message,
-      to: userId,
-    };
+    const notification = await Notification.findOne({
+      from,
+      to,
+    });
 
+    if (notification) {
+      await Notification.deleteOne({
+        from,
+        to,
+      });
+    }
+
+    const newNotification = { from, to };
     await Notification.create(newNotification);
 
     res.send({ ok: true });
@@ -50,4 +50,41 @@ const sendNotification = asyncHandler(async (req, res) => {
   }
 });
 
-export { getNotifications, sendNotification };
+// @Description     Delete a notification
+// @Route           DELETE /api/notifications/:id
+// @Access          Private
+const deleteNotification = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { acknowledged } = await Notification.deleteOne({ _id: id });
+
+    res.send({ ok: acknowledged });
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+});
+
+// @Description     Delete all notifications
+// @Route           DELETE /api/notifications/
+// @Access          Private
+const deleteAllNotifications = asyncHandler(async (req, res) => {
+  try {
+    const { user } = req;
+
+    const { acknowledged } = await Notification.deleteMany({ to: user._id });
+
+    res.send({ ok: acknowledged });
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+});
+
+export {
+  getNotifications,
+  sendNotification,
+  deleteAllNotifications,
+  deleteNotification,
+};

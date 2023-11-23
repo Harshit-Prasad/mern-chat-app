@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 
 const notificationSchema = mongoose.Schema(
   {
-    for: {
+    from: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Message",
+      ref: "User",
     },
     to: {
       type: mongoose.Schema.Types.ObjectId,

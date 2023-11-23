@@ -10,7 +10,10 @@ const getChat = asyncHandler(async (req, res) => {
     let chat = await Chat.find({
       users: { $elemMatch: { $eq: req.user._id } },
     })
-      .populate("users", "-password")
+      .populate({
+        path: "users",
+        select: "-password",
+      })
       .populate("latestMessage")
       .sort({ updatedAt: -1 });
 
