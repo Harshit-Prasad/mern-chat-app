@@ -13,7 +13,7 @@ export default function Home() {
   return (
     <Container>
       <Header>
-        <h1 className="display-3 text-center">Chit-Chat</h1>
+        <h1 className="display-3 text-center">Converse</h1>
       </Header>
       <Main>
         <div className="h-100 d-flex justify-content-center align-items-center flex-column m-md-0">

@@ -7,6 +7,7 @@ import { connectDB } from "./config/db.js";
 import userRoutes from "./routes/user.route.js";
 import chatRoutes from "./routes/chat.route.js";
 import messageRoutes from "./routes/message.route.js";
+import notificationRoutes from "./routes/notification.route.js";
 import { errorHandler, notFound } from "./middlewares/error.middleware.js";
 
 dotenv.config();
@@ -27,6 +28,7 @@ app.use(express.json());
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api/notification", notificationRoutes);
 
 // Error
 app.use(notFound);

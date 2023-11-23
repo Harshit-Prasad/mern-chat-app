@@ -6,7 +6,7 @@ import Skeleton from "../Skeleton/Skeleton";
 import Search from "../../../assets/icons/Search";
 import SearchResults from "./SearchResults";
 
-export default function SearchSidebar({ show, handleClose }) {
+export default function SearchSidebar({ showSearch, handleCloseSearch }) {
   const [getAllUsers, { isLoading }] = useLazyAllUsersQuery();
 
   const [search, setSearch] = useState("");
@@ -24,7 +24,7 @@ export default function SearchSidebar({ show, handleClose }) {
   }
 
   return (
-    <Offcanvas show={show} onHide={handleClose}>
+    <Offcanvas show={showSearch} onHide={handleCloseSearch}>
       <Offcanvas.Header closeButton>
         <Offcanvas.Title>Search User</Offcanvas.Title>
       </Offcanvas.Header>
@@ -32,15 +32,22 @@ export default function SearchSidebar({ show, handleClose }) {
         style={{
           backgroundColor: "transparent",
         }}
+        className="py-0"
       >
-        <Form onSubmit={handleSubmit} className="d-flex" style={{ gap: "1em" }}>
-          <Form.Control
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            type="text"
-            required={true}
-            placeholder="Search"
-          />
+        <Form
+          onSubmit={handleSubmit}
+          className="d-flex justify-content-between"
+          style={{ gap: "1em" }}
+        >
+          <Form.Group controlId="search">
+            <Form.Control
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              type="text"
+              required={true}
+              placeholder="Search"
+            />
+          </Form.Group>
           <Button disabled={isLoading} type="submit" className="btn-secondary">
             <Search />
           </Button>
