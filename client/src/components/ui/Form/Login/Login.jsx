@@ -26,7 +26,6 @@ export default function Login() {
       dispatch(setCredentials({ ...response }));
       navigate("/chat");
     } catch (error) {
-      console.log(error);
       toast.error(error?.data?.message);
     }
 

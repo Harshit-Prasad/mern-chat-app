@@ -6,6 +6,7 @@ import SearchSidebar from "../SearchSideBar/SearchSidebar";
 import NotificationSideBar from "../NotificationSideBar/NotificationSideBar";
 import Avatar from "../Avatar/Avatar";
 import ToolTip from "../ToolTip/ToolTip";
+import NotificationMark from "../NotificationMark/NotificationMark";
 import NotificationIcon from "../../../assets/icons/NotificationIcon";
 import Search from "../../../assets/icons/Search";
 import Logout from "../../../assets/icons/Logout";
@@ -15,6 +16,7 @@ function Navigation() {
   const [showSearch, setShowSearch] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const { userInformation } = useSelector((state) => state.authentication);
+  const { notification } = useSelector((state) => state.notification);
 
   const handleShowSearch = useCallback(() => setShowSearch(true), [showSearch]);
   const handleCloseSearch = useCallback(
@@ -58,10 +60,16 @@ function Navigation() {
           <ToolTip tooltip="notifications" placement="bottom">
             <Button
               onClick={handleOpenNotification}
-              className="btn-secondary d-flex me-md-2"
+              className="btn-secondary position-relative d-flex me-md-2"
               size="lg"
             >
-              <NotificationIcon />
+              <NotificationIcon>
+                <NotificationMark
+                  condition={notification.length}
+                  size="5px"
+                  backgroundColor="red"
+                />
+              </NotificationIcon>
             </Button>
           </ToolTip>
 

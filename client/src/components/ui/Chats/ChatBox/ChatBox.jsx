@@ -14,6 +14,8 @@ import {
   useLazyGetMessageQuery,
   useSendMessageMutation,
 } from "../../../../slices/api/messageSlice";
+import { useSendNotificationMutation } from "../../../../slices/api/notificationSlice";
+import { setNotification } from "../../../../slices/state/notificationSlice";
 import { useSocket } from "../../../../context/socket";
 import CallWindow from "./media-components/CallWindow";
 import ChatMessages from "./chat-messages/ChatMessages";
@@ -55,13 +57,15 @@ export default function ChatBox() {
 
   // messaging API channels
   const socket = useSocket();
+  const dispatch = useDispatch();
   const [sendMessage] = useSendMessageMutation();
   const [getMessages] = useLazyGetMessageQuery();
+  const [sendNotification] = useSendNotificationMutation();
   const { showChatList, chatList, selectedChat } = useSelector(
     (state) => state.chat
   );
   const { userInformation } = useSelector((state) => state.authentication);
-  const dispatch = useDispatch();
+  const { notification } = useSelector((state) => state.notification);
 
   // messaging events
   function hideChatBox() {
@@ -82,11 +86,33 @@ export default function ChatBox() {
       };
 
       setMessage("");
-      const response = await sendMessage(body).unwrap();
-      socket.emit("new-message", response);
-      setMessages((previous) => [...previous, response]);
+      const messageResponse = await sendMessage(body).unwrap();
 
-      const updatedSelectedChat = { ...selectedChat, latestMessage: response };
+      const remoteUser = getRemoteUser(
+        userInformation,
+        messageResponse.chat.users
+      );
+
+      let notificationResponse;
+
+      if (!remoteUserID) {
+        notificationResponse = await sendNotification({
+          to: remoteUser._id,
+          from: userInformation._id,
+          chat: selectedChat._id,
+        }).unwrap();
+      }
+
+      socket.emit("new-message", {
+        message: messageResponse,
+        notification: notificationResponse,
+      });
+
+      setMessages((previous) => [...previous, messageResponse]);
+      const updatedSelectedChat = {
+        ...selectedChat,
+        latestMessage: messageResponse,
+      };
 
       const updatedChatList = chatList.slice();
       let updatedChatIndex;
@@ -129,6 +155,10 @@ export default function ChatBox() {
     setIsTyping(false);
   }, [setIsTyping]);
 
+  const handleStartTyping = useCallback(() => {
+    setIsTyping(true);
+  }, [setIsTyping]);
+
   useEffect(() => {
     if (!socketConnected || !selectedChat) {
       return;
@@ -162,10 +192,6 @@ export default function ChatBox() {
     };
   }, [message]);
 
-  const handleStartTyping = useCallback(() => {
-    setIsTyping(true);
-  }, [setIsTyping]);
-
   // Socket connections
   useEffect(() => {
     // Connection setup
@@ -190,16 +216,17 @@ export default function ChatBox() {
 
   // Real time messaging
   const handleMessageReceived = useCallback(
-    (message) => {
+    ({ message, notification: newNotification }) => {
       if (
         !selectedChatCompare ||
         message.chat._id !== selectedChatCompare._id
       ) {
+        // Updating the Chat list based on most recent message
         const messageChatID = message.chat._id;
         const messageChat = chatList.find((chat) => {
           return chat._id === messageChatID;
         });
-        console.log(messageChat, message);
+
         const updateMessageChat = { ...messageChat };
         updateMessageChat.latestMessage = { ...message };
 
@@ -216,11 +243,38 @@ export default function ChatBox() {
         updateChatList.splice(updatedChatIndex, 1);
         updateChatList.unshift(updateMessageChat);
         dispatch(setChatList(updateChatList));
+
+        // Update Notification
+        const updatedNotification = notification.slice();
+
+        const remoteUserId = newNotification.from._id;
+        let notificationIndex;
+
+        updatedNotification.forEach((notify, i) => {
+          if (notify.from._id === remoteUserId) {
+            notificationIndex = i;
+            return;
+          }
+        });
+
+        if (notificationIndex !== undefined) {
+          updatedNotification.splice(notificationIndex, 1);
+        }
+
+        updatedNotification.unshift(newNotification);
+        dispatch(setNotification(updatedNotification));
       } else {
         setMessages([...messages, message]);
       }
     },
-    [selectedChatCompare, messages, message, setMessages, chatList]
+    [
+      selectedChatCompare,
+      messages,
+      message,
+      setMessages,
+      chatList,
+      notification,
+    ]
   );
 
   useEffect(() => {
@@ -460,10 +514,6 @@ export default function ChatBox() {
     );
 
     webRTCPeer.peer.addEventListener("track", handleIncomingTracks);
-
-    // webRTCPeer.peer.addEventListener("icecandidate", (e) => {
-    //   console.log(e.candidate);
-    // });
 
     return () => {
       socket.off("remote-user-joined", handleRemoteUserJoined);

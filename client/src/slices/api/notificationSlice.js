@@ -3,7 +3,7 @@ const USER_URL = "/api/notification";
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    send: builder.mutation({
+    sendNotification: builder.mutation({
       query: (data) => ({
         url: `${USER_URL}`,
         method: "POST",
@@ -12,13 +12,33 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
 
     getAllNotifications: builder.query({
-      query: (search) => ({
-        url: `${USER_URL}?search=${search}`,
+      query: () => ({
+        url: `${USER_URL}`,
         method: "GET",
+      }),
+      invalidatesTags: ["Notification"],
+    }),
+
+    deleteNotification: builder.mutation({
+      query: (id) => ({
+        url: `${USER_URL}/${id}`,
+        method: "DELETE",
+      }),
+      providesTags: ["Notification"],
+    }),
+
+    deleteAllNotifications: builder.mutation({
+      query: () => ({
+        url: `${USER_URL}`,
+        method: "DELETE",
       }),
     }),
   }),
 });
 
-export const { useSendMutation, useLazyGetAllNotificationsQuery } =
-  userApiSlice;
+export const {
+  useSendNotificationMutation,
+  useLazyGetAllNotificationsQuery,
+  useDeleteNotificationMutation,
+  useDeleteAllNotificationsMutation,
+} = userApiSlice;

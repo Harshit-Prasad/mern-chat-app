@@ -60,7 +60,7 @@ io.on("connection", (socket) => {
   });
 
   // Real time messaging
-  socket.on("new-message", (message) => {
+  socket.on("new-message", ({ message, notification }) => {
     let chat = message.chat;
 
     if (!chat.users) return;
@@ -68,7 +68,7 @@ io.on("connection", (socket) => {
     chat.users.forEach((user) => {
       if (user._id === message.sender._id) return;
 
-      socket.in(user._id).emit("message-recieved", message);
+      socket.in(user._id).emit("message-recieved", { message, notification });
     });
   });
 

@@ -9,10 +9,17 @@ const getNotifications = asyncHandler(async (req, res) => {
     const { user } = req;
     const notifications = await Notification.find({
       to: user._id,
-    }).populate({
-      path: "from",
-      select: "name bgColor",
-    });
+    })
+      .populate({
+        path: "from",
+        select: "name bgColor",
+      })
+      .populate({
+        path: "chat",
+        populate: {
+          path: "users",
+        },
+      });
 
     res.status(200).json(notifications);
   } catch (error) {
@@ -26,7 +33,7 @@ const getNotifications = asyncHandler(async (req, res) => {
 // @Access          Private
 const sendNotification = asyncHandler(async (req, res) => {
   try {
-    const { from, to } = req.body;
+    const { from, to, chat } = req.body;
 
     const notification = await Notification.findOne({
       from,
@@ -40,10 +47,19 @@ const sendNotification = asyncHandler(async (req, res) => {
       });
     }
 
-    const newNotification = { from, to };
-    await Notification.create(newNotification);
+    let newNotification = await Notification.create({ from, to, chat });
+    newNotification = await newNotification.populate({
+      path: "from",
+      select: "name bgColor",
+    });
+    newNotification = await newNotification.populate({
+      path: "chat",
+      populate: {
+        path: "users",
+      },
+    });
 
-    res.send({ ok: true });
+    res.send(newNotification);
   } catch (error) {
     res.status(400);
     throw new Error(error.message);

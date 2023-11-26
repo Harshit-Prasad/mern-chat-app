@@ -52,7 +52,7 @@ const getMessages = asyncHandler(async (req, res) => {
 
     res.send(messages);
   } catch (error) {
-    res.send(400);
+    res.status(400);
     throw new Error(error.message);
   }
 });
