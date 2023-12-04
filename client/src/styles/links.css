@@ -1,4 +1,4 @@
-.error-boundary a {
+.link-container a {
   padding: 0.5rem 1rem;
   background-color: var(--bs-pink);
   border-radius: 1em;
@@ -8,7 +8,7 @@
   outline: none;
 }
 
-.error-boundary a:hover {
+.link-container a:hover {
   outline: 2px solid var(--bs-white);
   color: var(--bs-white);
 }

@@ -16,6 +16,7 @@ import "./styles/bootstrap.css";
 import "./styles/global.css";
 import ChatErrorBoundary from "./components/error-boundaries/ChatErrorBoundary.jsx";
 import PageLoader from "./components/ui/Loading/PageLoader.jsx";
+import NotFound from "./components/not-found/NotFound.jsx";
 
 const Home = lazy(() => wait(0).then(() => import("./pages/Home.jsx")));
 const Chat = lazy(() => wait(0).then(() => import("./pages/Chat.jsx")));
@@ -48,6 +49,7 @@ const router = createBrowserRouter(
           errorElement={<ChatErrorBoundary />}
         />
       </Route>
+      <Route path="*" element={<NotFound />} />
     </Route>
   )
 );
