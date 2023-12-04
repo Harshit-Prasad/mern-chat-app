@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Form } from "react-bootstrap";
-import Lottie from "lottie-react";
+import { BeatLoader } from "react-spinners";
 import ReactPlayer from "react-player";
 import {
   setShowChatList,
@@ -17,9 +17,9 @@ import {
 import { useSendNotificationMutation } from "../../../../slices/api/notificationSlice";
 import { setNotification } from "../../../../slices/state/notificationSlice";
 import { useSocket } from "../../../../context/socket";
-import CallWindow from "./media-components/CallWindow";
-import ChatMessages from "./chat-messages/ChatMessages";
-import Loader from "../../Loader/Loader";
+import CallWindow from "./Media/CallWindow";
+import ChatMessages from "./ChatMessages/ChatMessages";
+import Loader from "../../Loading/Loader";
 import LeftArrow from "../../../../assets/icons/LeftArrow";
 import MicMute from "../../../../assets/icons/MicMute";
 import MicUnmute from "../../../../assets/icons/MicUnmute";
@@ -28,7 +28,6 @@ import CameraOff from "../../../../assets/icons/CameraOff";
 import Send from "../../../../assets/icons/Send";
 import VideoCall from "../../../../assets/icons/VideoCall";
 import { getRemoteUser } from "../../../../utils/chat";
-import typingAnimation from "../../../../assets/animations/typing.json";
 import WebRTCPeer from "../../../../services/WebRTCPeer";
 
 import styles from "./ChatBox.module.css";
@@ -74,7 +73,7 @@ export default function ChatBox() {
   }
 
   function handleMessageTyping(e) {
-    setMessage(e.target.value);
+    setMessage(() => e.target.value);
   }
 
   async function handleMessageSubmit(e) {
@@ -164,11 +163,6 @@ export default function ChatBox() {
       return;
     }
 
-    if (!message) {
-      socket.emit("stop-typing", selectedChat._id);
-      return;
-    }
-
     if (!typing) {
       setTyping(true);
       socket.emit("typing", selectedChat._id);
@@ -181,7 +175,7 @@ export default function ChatBox() {
       const timeNow = new Date().getTime();
       const timeDifference = timeNow - lastTypingTime;
 
-      if (timeDifference >= TIMER_LENGTH && typing) {
+      if (timeDifference >= TIMER_LENGTH) {
         socket.emit("stop-typing", selectedChat._id);
         setTyping(false);
       }
@@ -195,7 +189,7 @@ export default function ChatBox() {
   // Socket connections
   useEffect(() => {
     // Connection setup
-    socket.emit("setup", userInformation);
+    socket.emit("setup", userInformation._id);
     socket.on("connected", handleConnected);
     // Typing indicator logic
     socket.on("typing", handleStartTyping);
@@ -246,7 +240,7 @@ export default function ChatBox() {
 
         // Update Notification
         const updatedNotification = notification.slice();
-
+        console.log(newNotification);
         const remoteUserId = newNotification.from._id;
         let notificationIndex;
 
@@ -316,7 +310,6 @@ export default function ChatBox() {
     [setRemoteUserID]
   );
 
-  // async
   const handleCallRemoteUser = useCallback(async () => {
     if (remoteUserID) {
       try {
@@ -332,11 +325,21 @@ export default function ChatBox() {
         handleError();
       }
     } else {
+      const currentUser = getRemoteUser(userInformation, selectedChat.users);
+      const currentUserId = currentUser._id;
+
+      socket.emit("miss-call", { to: currentUserId, from: userInformation });
       toast.error("User is inactive");
     }
-  }, [remoteUserID, webRTCPeer, localStream, handleError]);
+  }, [
+    remoteUserID,
+    webRTCPeer,
+    localStream,
+    selectedChat,
+    userInformation,
+    handleError,
+  ]);
 
-  // async
   const handleIncomingCall = useCallback(
     async ({ from, offer }) => {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -355,9 +358,9 @@ export default function ChatBox() {
     for (const track of localStream.getTracks()) {
       webRTCPeer.peer.addTrack(track, localStream);
     }
+    console.log("sent!!!");
   }, [localStream, webRTCPeer]);
 
-  // async
   const handleCallAccepted = useCallback(
     async ({ from, answer }) => {
       await webRTCPeer.setLocalDescription(answer);
@@ -375,6 +378,7 @@ export default function ChatBox() {
     webRTCPeer.peer.close();
     setWebRTCPeer(new WebRTCPeer());
     setVideoCallDisplay(false);
+    toast.error("Call rejected");
   }, [webRTCPeer, localStream]);
 
   const handleAnswerCall = useCallback(() => {
@@ -388,13 +392,13 @@ export default function ChatBox() {
     tracks.forEach((track) => {
       track.stop();
     });
+    setRemoteStream(null);
     socket.emit("call-rejected", { to: remoteUserID });
     webRTCPeer.peer.close();
     setWebRTCPeer(new WebRTCPeer());
     setIncomingVideoCall(false);
   }, [remoteUserID, webRTCPeer, localStream]);
 
-  // async
   const handleNegotiationNeeded = useCallback(
     async (e) => {
       try {
@@ -407,7 +411,6 @@ export default function ChatBox() {
     [webRTCPeer, remoteUserID, handleError]
   );
 
-  // async
   const handleNegotiationIncoming = useCallback(
     async ({ from, offer }) => {
       try {
@@ -420,7 +423,6 @@ export default function ChatBox() {
     [webRTCPeer, handleError]
   );
 
-  // async
   const handleNegotiationFinal = useCallback(
     async ({ answer }) => {
       try {
@@ -440,6 +442,11 @@ export default function ChatBox() {
     [setRemoteStream]
   );
 
+  const handleCallMissed = useCallback(({ from }) => {
+    const { name } = from;
+    toast.info(`Missed Call from: ${name}`);
+  }, []);
+
   // Media Controls
   const handleEndVideoCall = useCallback(() => {
     const tracks = localStream.getTracks();
@@ -451,6 +458,8 @@ export default function ChatBox() {
     setVideoCallDisplay(false);
     socket.emit("end-call", { to: remoteUserID });
     setWebRTCPeer(new WebRTCPeer());
+
+    toast.info("Call has ended");
   }, [webRTCPeer, localStream, remoteUserID]);
 
   const handleVideoCallEnded = useCallback(() => {
@@ -461,7 +470,10 @@ export default function ChatBox() {
     setRemoteStream(null);
     webRTCPeer.peer.close();
     setVideoCallDisplay(false);
+    setIncomingVideoCall(false);
     setWebRTCPeer(new WebRTCPeer());
+
+    toast.info("Call has ended");
   }, [webRTCPeer, localStream, remoteUserID]);
 
   const handleErrorOccured = useCallback(() => {
@@ -478,6 +490,10 @@ export default function ChatBox() {
     setWebRTCPeer(new WebRTCPeer());
     toast.error("Something went wrong, Try again");
   }, [webRTCPeer, localStream, remoteUserID]);
+
+  const handleRemoteUserLeft = useCallback(() => {
+    setRemoteUserID(null);
+  }, []);
 
   useEffect(() => {
     if (!localStream) return;
@@ -506,7 +522,9 @@ export default function ChatBox() {
     socket.on("nego-incoming", handleNegotiationIncoming);
     socket.on("nego-final", handleNegotiationFinal);
     socket.on("call-ended", handleVideoCallEnded);
+    socket.on("remote-user-left", handleRemoteUserLeft);
     socket.on("error-occured", handleErrorOccured);
+    socket.on("call-missed", handleCallMissed);
 
     webRTCPeer.peer.addEventListener(
       "negotiationneeded",
@@ -524,7 +542,9 @@ export default function ChatBox() {
       socket.off("nego-incoming", handleNegotiationIncoming);
       socket.off("nego-final", handleNegotiationFinal);
       socket.off("call-ended", handleVideoCallEnded);
+      socket.off("remote-user-left", handleRemoteUserLeft);
       socket.off("error-occured", handleErrorOccured);
+      socket.off("call-missed", handleCallMissed);
 
       webRTCPeer.peer.removeEventListener(
         "negotiationneeded",
@@ -539,17 +559,23 @@ export default function ChatBox() {
     handleIncomingCall,
     handleCallAccepted,
     handleCallRejected,
+    handleCallMissed,
     handleNegotiationIncoming,
     handleNegotiationFinal,
     handleNegotiationNeeded,
     handleIncomingTracks,
     handleVideoCallEnded,
+    handleRemoteUserLeft,
     handleErrorOccured,
   ]);
 
   useEffect(() => {
+    if (!selectedChat) return;
+
     return () => {
+      console.log("unmounted");
       setRemoteUserID(null);
+      socket.emit("leave-chat", selectedChat._id);
     };
   }, [selectedChat]);
 
@@ -571,7 +597,10 @@ export default function ChatBox() {
         ) : (
           <div className="h-100 w-100 d-flex flex-column">
             <div className="d-flex justify-content-between align-items-center mt-1 mx-1">
-              <div className="d-flex" style={{ gap: "0.5em" }}>
+              <div
+                className="d-flex align-items-center"
+                style={{ gap: "0.5em" }}
+              >
                 {selectedChat && (
                   <Avatar
                     name={
@@ -591,7 +620,14 @@ export default function ChatBox() {
                   <VideoCall />
                 </Button>
                 {isTyping && (
-                  <Lottie loop={true} animationData={typingAnimation} />
+                  <div
+                    className="glass d-flex justify-content-center align-items-center py-1 px-2"
+                    style={{
+                      borderRadius: "1em",
+                    }}
+                  >
+                    <BeatLoader color="#ffffff" />
+                  </div>
                 )}
               </div>
               <Button
@@ -689,7 +725,7 @@ export default function ChatBox() {
               )}
             </div>
           </div>
-          <div>
+          <div className="d-flex mt-2" style={{ gap: "1em" }}>
             <Button
               style={{
                 height: "75px",

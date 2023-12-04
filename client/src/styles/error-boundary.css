@@ -1,0 +1,14 @@
+.error-boundary a {
+  padding: 0.5rem 1rem;
+  background-color: var(--bs-pink);
+  border-radius: 1em;
+  text-decoration: none;
+  font-size: 18px;
+  transition: outline 100ms ease-in;
+  outline: none;
+}
+
+.error-boundary a:hover {
+  outline: 2px solid var(--bs-white);
+  color: var(--bs-white);
+}

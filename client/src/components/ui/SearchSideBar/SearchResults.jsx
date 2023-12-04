@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import { useCreateChatMutation } from "../../../slices/api/chatSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { setChatList } from "../../../slices/state/chatSlice";
-import Loader from "../Loader/Loader";
+import Loader from "../Loading/Loader";
 import Avatar from "../Avatar/Avatar";
 
 export default function SearchResults({ searchResult }) {

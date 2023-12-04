@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { useSignupMutation } from "../../../../slices/api/userSlice";
 import { setCredentials } from "../../../../slices/state/authenticationSlice";
-import Loader from "../../Loader/Loader";
+import Loader from "../../Loading/Loader";
 import Input from "../Input/Input";
 import { getBgcolor } from "../../../../utils/getBgColor";
 

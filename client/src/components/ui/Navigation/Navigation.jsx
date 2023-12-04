@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, Dropdown, Nav, Navbar, NavDropdown } from "react-bootstrap";
+import { Button, Navbar } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import SearchSidebar from "../SearchSideBar/SearchSidebar";
@@ -12,7 +12,7 @@ import Search from "../../../assets/icons/Search";
 import Logout from "../../../assets/icons/Logout";
 import styles from "./Navigation.module.css";
 
-function Navigation() {
+export default function Navigation() {
   const [showSearch, setShowSearch] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const { userInformation } = useSelector((state) => state.authentication);
@@ -57,21 +57,19 @@ function Navigation() {
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
       <Navbar.Collapse style={{ borderRadius: "5px" }} id="basic-navbar-nav">
         <div className={`mt-2 mt-md-0 p-1 p-md-0 ${styles["btn-container"]}`}>
-          <ToolTip tooltip="notifications" placement="bottom">
-            <Button
-              onClick={handleOpenNotification}
-              className="btn-secondary position-relative d-flex me-md-2"
-              size="lg"
-            >
-              <NotificationIcon>
-                <NotificationMark
-                  condition={notification.length}
-                  size="5px"
-                  backgroundColor="red"
-                />
-              </NotificationIcon>
-            </Button>
-          </ToolTip>
+          <Button
+            onClick={handleOpenNotification}
+            className="btn-secondary position-relative d-flex me-md-2"
+            size="lg"
+          >
+            <NotificationIcon>
+              <NotificationMark
+                condition={notification.length}
+                size="5px"
+                backgroundColor="red"
+              />
+            </NotificationIcon>
+          </Button>
 
           <NotificationSideBar
             handleCloseNotification={handleCloseNotification}
@@ -100,5 +98,3 @@ function Navigation() {
     </Navbar>
   );
 }
-
-export default React.memo(Navigation);

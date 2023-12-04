@@ -8,7 +8,7 @@ import {
   useDeleteAllNotificationsMutation,
 } from "../../../slices/api/notificationSlice";
 import { setNotification } from "../../../slices/state/notificationSlice";
-import Loader from "../Loader/Loader";
+import Loader from "../Loading/Loader";
 import Avatar from "../Avatar/Avatar";
 import {
   setSelectedChat,
@@ -68,6 +68,7 @@ export default function NotificationSideBar({
   );
 
   const handleDeleteAllNotifications = useCallback(async () => {
+    console.log("clicked");
     try {
       const { ok } = await deleteAllNotification().unwrap();
 
@@ -85,6 +86,7 @@ export default function NotificationSideBar({
       <Offcanvas.Body className="py-0">
         <Button
           onClick={handleDeleteAllNotifications}
+          disabled={notification.length ? false : true}
           className="btn-primary w-100 text-center"
         >
           Clear All

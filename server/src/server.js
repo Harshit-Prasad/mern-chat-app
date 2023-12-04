@@ -40,14 +40,19 @@ server.listen(PORT, function () {
 
 // Socket.io
 io.on("connection", (socket) => {
-  socket.on("setup", (user) => {
-    socket.join(user._id);
+  socket.on("setup", (userID) => {
+    socket.join(userID);
     socket.emit("connected");
   });
 
   socket.on("join-chat", (room) => {
     socket.join(room);
     socket.in(room).emit("remote-user-joined", { from: socket.id });
+  });
+
+  socket.on("leave-chat", (room) => {
+    socket.in(room).emit("remote-user-left");
+    socket.leave(room);
   });
 
   // Real time typing indicator
@@ -103,5 +108,9 @@ io.on("connection", (socket) => {
 
   socket.on("error", ({ to }) => {
     io.to(to).emit("error-occured");
+  });
+
+  socket.on("miss-call", ({ to, from }) => {
+    socket.in(to).emit("call-missed", { from });
   });
 });

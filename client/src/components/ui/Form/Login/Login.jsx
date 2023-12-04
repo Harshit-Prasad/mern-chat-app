@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 
 import { useLoginMutation } from "../../../../slices/api/userSlice";
 import { setCredentials } from "../../../../slices/state/authenticationSlice";
-import Loader from "../../Loader/Loader";
+import Loader from "../../Loading/Loader";
 
 export default function Login() {
   const [email, setEmail] = useState("");
