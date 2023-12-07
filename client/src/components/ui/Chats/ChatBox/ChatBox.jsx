@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Form } from "react-bootstrap";
 import { BeatLoader } from "react-spinners";
-import ReactPlayer from "react-player";
 import {
   setShowChatList,
   setSelectedChat,
@@ -21,18 +20,14 @@ import CallWindow from "./Media/CallWindow";
 import ChatMessages from "./ChatMessages/ChatMessages";
 import Loader from "../../Loading/Loader";
 import LeftArrow from "../../../../assets/icons/LeftArrow";
-import MicMute from "../../../../assets/icons/MicMute";
-import MicUnmute from "../../../../assets/icons/MicUnmute";
-import CameraOn from "../../../../assets/icons/CameraOn";
-import CameraOff from "../../../../assets/icons/CameraOff";
 import Send from "../../../../assets/icons/Send";
 import VideoCall from "../../../../assets/icons/VideoCall";
 import { getRemoteUser } from "../../../../utils/chat";
 import WebRTCPeer from "../../../../services/WebRTCPeer";
-
-import styles from "./ChatBox.module.css";
-import Close from "../../../../assets/icons/Close";
 import Avatar from "../../Avatar/Avatar";
+import UserWindow from "./Media/UserWindow";
+import MediaControllers from "./Media/MediaControllers";
+import styles from "./ChatBox.module.css";
 
 export default function ChatBox() {
   // messaging states
@@ -358,7 +353,6 @@ export default function ChatBox() {
     for (const track of localStream.getTracks()) {
       webRTCPeer.peer.addTrack(track, localStream);
     }
-    console.log("sent!!!");
   }, [localStream, webRTCPeer]);
 
   const handleCallAccepted = useCallback(
@@ -682,85 +676,17 @@ export default function ChatBox() {
       {createPortal(
         <CallWindow display={videoCallDisplay}>
           <div className="d-flex align-items-center justify-content-evenly flex-column flex-md-row">
-            <div
-              style={{
-                maxWidth: "min(100%, 400px)",
-                aspectRatio: "4 / 3",
-                borderRadius: "1em",
-                overflow: "hidden",
-              }}
-            >
-              <>
-                {localStream && (
-                  <ReactPlayer
-                    height="100%"
-                    width="100%"
-                    playing
-                    playsinline
-                    url={localStream}
-                  />
-                )}
-              </>
-            </div>
-
-            <div
-              style={{
-                maxWidth: "min(100%, 400px)",
-                aspectRatio: "4 / 3",
-                overflow: "hidden",
-                borderRadius: "1em",
-              }}
-            >
-              {remoteStream && (
-                <>
-                  <ReactPlayer
-                    height="100%"
-                    width="100%"
-                    playing
-                    playsinline
-                    url={remoteStream}
-                  />
-                  {"Remote User"}
-                </>
-              )}
-            </div>
+            <UserWindow url={localStream} />
+            <UserWindow url={remoteStream} />
           </div>
           <div className="d-flex mt-2" style={{ gap: "1em" }}>
-            <Button
-              style={{
-                height: "75px",
-                width: "75px",
-                borderRadius: "50%",
-              }}
-              onClick={() => {
-                setMuted((previous) => !previous);
-              }}
-            >
-              {muted ? <MicMute /> : <MicUnmute />}
-            </Button>
-            <Button
-              style={{
-                height: "75px",
-                width: "75px",
-                borderRadius: "50%",
-              }}
-              onClick={() => {
-                setPlaying((previous) => !previous);
-              }}
-            >
-              {playing ? <CameraOn /> : <CameraOff />}
-            </Button>
-            <Button
-              style={{
-                height: "75px",
-                width: "75px",
-                borderRadius: "50%",
-                backgroundColor: "red",
-              }}
-              onClick={handleEndVideoCall}
-            >
-              <Close full />
-            </Button>
+            <MediaControllers
+              setMuted={setMuted}
+              muted={muted}
+              setPlaying={setPlaying}
+              playing={playing}
+              handleEndVideoCall={handleEndVideoCall}
+            />
           </div>
         </CallWindow>,
         document.getElementById("video-call-window")

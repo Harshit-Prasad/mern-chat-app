@@ -4,7 +4,7 @@ import Container from "../components/layouts/Container/Container";
 import Header from "../components/layouts/Header/Header";
 import Main from "../components/layouts/Main/Main";
 import Footer from "../components/layouts/Footer/Footer";
-import Forms from "../components/ui/Form/Forms/Forms";
+import Auth from "../components/ui/Form/Auth/Auth";
 import Card from "../components/ui/Card/Card";
 
 export default function Home() {
@@ -21,7 +21,7 @@ export default function Home() {
             style={{ borderRadius: "1em", overflow: "auto" }}
             className="glass p-lg-2 p-2 m-2 d-flex flex-grow-1 flex-sm-grow-0 align-items-center flex-column"
           >
-            {userInformation ? <Card /> : <Forms />}
+            {userInformation ? <Card /> : <Auth />}
           </div>
         </div>
       </Main>
