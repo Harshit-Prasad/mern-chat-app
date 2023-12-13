@@ -34,39 +34,53 @@ export default function Login() {
   }
 
   return (
-    <Form onSubmit={onFormSubmit}>
-      <Input
-        className={"mb-3"}
-        controlId={"fomrBasicEmail"}
-        type={"email"}
-        placeholder={"Enter Email"}
-        label={"Email Address"}
-        onChange={(e) => setEmail(e.target.value)}
-        value={email}
-      />
-      <Input
-        className={"mb-3"}
-        controlId={"fomrBasicPassword"}
-        type={"password"}
-        placeholder={"Enter Password"}
-        label={"Password"}
-        onChange={(e) => setPassword(e.target.value)}
-        value={password}
-      />
-      <Button className={`w-100`} variant="primary" type="submit">
-        Login
-      </Button>
-      <Button
-        onClick={(e) => {
-          setEmail("guest@user.com");
-          setPassword("12345678");
-        }}
-        className={`w-100 mt-2`}
-        variant="secondary"
-      >
-        Get Guest User Credentials
-      </Button>
-      {isLoading && <Loader />}
-    </Form>
+    <>
+      <Form onSubmit={onFormSubmit}>
+        <Input
+          className={"mb-3"}
+          controlId={"fomrBasicEmail"}
+          type={"email"}
+          placeholder={"Enter Email"}
+          label={"Email Address"}
+          onChange={(e) => setEmail(e.target.value)}
+          value={email}
+        />
+        <Input
+          className={"mb-3"}
+          controlId={"fomrBasicPassword"}
+          type={"password"}
+          placeholder={"Enter Password"}
+          label={"Password"}
+          onChange={(e) => setPassword(e.target.value)}
+          value={password}
+        />
+        <Button className={`w-100`} variant="primary" type="submit">
+          Login
+        </Button>
+        {isLoading && <Loader />}
+      </Form>
+      <div className="d-flex flex-column">
+        <Button
+          onClick={(e) => {
+            setEmail("guest@user1.com");
+            setPassword("12345678");
+          }}
+          className={`w-100 d-inline-block mt-2`}
+          variant="secondary"
+        >
+          Get Guest User-1 Credentials
+        </Button>
+        <Button
+          onClick={(e) => {
+            setEmail("guest@user2.com");
+            setPassword("12345678");
+          }}
+          className={`w-100 d-inline-block mt-2`}
+          variant="secondary"
+        >
+          Get Guest User-2 Credentials
+        </Button>
+      </div>
+    </>
   );
 }
