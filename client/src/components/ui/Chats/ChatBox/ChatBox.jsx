@@ -28,6 +28,7 @@ import Avatar from "../../Avatar/Avatar";
 import UserWindow from "./Media/UserWindow";
 import MediaControllers from "./Media/MediaControllers";
 import styles from "./ChatBox.module.css";
+import VoiceCall from "../../../../assets/icons/VoiceCall";
 
 export default function ChatBox() {
   // messaging states
@@ -39,13 +40,14 @@ export default function ChatBox() {
   const [isTyping, setIsTyping] = useState(false);
   const [selectedChatCompare, setSelectedChatCompare] = useState();
 
-  // video-calling states
+  // calling states
   const [webRTCPeer, setWebRTCPeer] = useState(new WebRTCPeer());
   const [remoteUserID, setRemoteUserID] = useState();
   const [localStream, setLocalStream] = useState();
   const [remoteStream, setRemoteStream] = useState();
   const [muted, setMuted] = useState(false);
   const [playing, setPlaying] = useState(true);
+  const [isVideoCall, setIsVideoCall] = useState();
   const [videoCallDisplay, setVideoCallDisplay] = useState(false);
   const [incomingVideoCall, setIncomingVideoCall] = useState(false);
 
@@ -305,40 +307,50 @@ export default function ChatBox() {
     [setRemoteUserID]
   );
 
-  const handleCallRemoteUser = useCallback(async () => {
-    if (remoteUserID) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        setLocalStream(stream);
-        const offer = await webRTCPeer.getOffer();
-        socket.emit("call-remote-user", { to: remoteUserID, offer });
-        setVideoCallDisplay(true);
-      } catch (error) {
-        handleError();
-      }
-    } else {
-      const currentUser = getRemoteUser(userInformation, selectedChat.users);
-      const currentUserId = currentUser._id;
+  const handleCallRemoteUser = useCallback(
+    async (isVideoCall) => {
+      if (remoteUserID) {
+        console.log(isVideoCall);
+        setIsVideoCall(isVideoCall);
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: isVideoCall,
+            audio: true,
+          });
+          setLocalStream(stream);
+          const offer = await webRTCPeer.getOffer();
+          socket.emit("call-remote-user", {
+            to: remoteUserID,
+            offer,
+            isVideoCall,
+          });
+          setVideoCallDisplay(true);
+        } catch (error) {
+          handleError();
+        }
+      } else {
+        const currentUser = getRemoteUser(userInformation, selectedChat.users);
+        const currentUserId = currentUser._id;
 
-      socket.emit("miss-call", { to: currentUserId, from: userInformation });
-      toast.error("User is inactive");
-    }
-  }, [
-    remoteUserID,
-    webRTCPeer,
-    localStream,
-    selectedChat,
-    userInformation,
-    handleError,
-  ]);
+        socket.emit("miss-call", { to: currentUserId, from: userInformation });
+        toast.error("User is inactive");
+      }
+    },
+    [
+      remoteUserID,
+      webRTCPeer,
+      localStream,
+      selectedChat,
+      userInformation,
+      handleError,
+    ]
+  );
 
   const handleIncomingCall = useCallback(
-    async ({ from, offer }) => {
+    async ({ from, offer, isVideoCall }) => {
+      setIsVideoCall(isVideoCall);
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: isVideoCall,
         audio: true,
       });
       setLocalStream(stream);
@@ -499,12 +511,12 @@ export default function ChatBox() {
   }, [muted, localStream]);
 
   useEffect(() => {
-    if (!localStream) return;
+    if (!localStream || !isVideoCall) return;
 
     const videoTrack = localStream
       .getTracks()
       .find((track) => track.kind === "video");
-    videoTrack.enabled = playing;
+    videoTrack.enabled = isVideoCall && playing;
   }, [localStream, playing]);
 
   useEffect(() => {
@@ -573,6 +585,8 @@ export default function ChatBox() {
     };
   }, [selectedChat]);
 
+  console.log(localStream, remoteStream);
+
   return (
     <>
       <div
@@ -608,10 +622,17 @@ export default function ChatBox() {
                 )}
                 <Button
                   className="d-block btn-secondary"
-                  onClick={handleCallRemoteUser}
+                  onClick={handleCallRemoteUser.bind(this, true)}
                   disabled={incomingVideoCall}
                 >
                   <VideoCall />
+                </Button>
+                <Button
+                  className="d-block btn-secondary"
+                  onClick={handleCallRemoteUser.bind(this, false)}
+                  disabled={incomingVideoCall}
+                >
+                  <VoiceCall />
                 </Button>
                 {isTyping && (
                   <div
@@ -672,23 +693,29 @@ export default function ChatBox() {
           </div>
         )}
       </div>
-
       {createPortal(
-        <CallWindow display={videoCallDisplay}>
-          <div className="d-flex align-items-center justify-content-evenly flex-column flex-md-row">
-            <UserWindow url={localStream} />
-            <UserWindow url={remoteStream} />
-          </div>
-          <div className="d-flex mt-2" style={{ gap: "1em" }}>
-            <MediaControllers
-              setMuted={setMuted}
-              muted={muted}
-              setPlaying={setPlaying}
-              playing={playing}
-              handleEndVideoCall={handleEndVideoCall}
-            />
-          </div>
-        </CallWindow>,
+        selectedChat && (
+          <CallWindow display={videoCallDisplay}>
+            <div className="d-flex align-items-center justify-content-evenly flex-column flex-md-row">
+              <UserWindow
+                url={localStream}
+                isVideoCall={isVideoCall}
+                remoteUser={getRemoteUser(userInformation, selectedChat?.users)}
+              />
+              <UserWindow url={remoteStream} isVideoCall={isVideoCall} />
+            </div>
+            <div className="d-flex mt-2" style={{ gap: "1em" }}>
+              <MediaControllers
+                setMuted={setMuted}
+                muted={muted}
+                setPlaying={setPlaying}
+                playing={playing}
+                handleEndVideoCall={handleEndVideoCall}
+                isVideoCall={isVideoCall}
+              />
+            </div>
+          </CallWindow>
+        ),
         document.getElementById("video-call-window")
       )}
     </>

@@ -77,13 +77,13 @@ io.on("connection", (socket) => {
     });
   });
 
-  // Video Calling
+  // Calling
   socket.on("local-user-joined", ({ to }) => {
     io.to(to).emit("local-user-joined", { from: socket.id });
   });
 
-  socket.on("call-remote-user", ({ to, offer }) => {
-    io.to(to).emit("incoming-call", { from: socket.id, offer });
+  socket.on("call-remote-user", ({ to, offer, isVideoCall }) => {
+    io.to(to).emit("incoming-call", { from: socket.id, offer, isVideoCall });
   });
 
   socket.on("call-accepted", ({ answer, to }) => {

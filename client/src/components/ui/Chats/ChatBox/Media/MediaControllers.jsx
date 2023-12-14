@@ -12,6 +12,7 @@ export default function MediaControllers({
   setPlaying,
   playing,
   handleEndVideoCall,
+  isVideoCall = false,
 }) {
   return (
     <>
@@ -27,18 +28,20 @@ export default function MediaControllers({
       >
         {muted ? <MicMute /> : <MicUnmute />}
       </Button>
-      <Button
-        style={{
-          height: "75px",
-          width: "75px",
-          borderRadius: "50%",
-        }}
-        onClick={() => {
-          setPlaying((previous) => !previous);
-        }}
-      >
-        {playing ? <CameraOn /> : <CameraOff />}
-      </Button>
+      {isVideoCall && (
+        <Button
+          style={{
+            height: "75px",
+            width: "75px",
+            borderRadius: "50%",
+          }}
+          onClick={() => {
+            setPlaying((previous) => !previous);
+          }}
+        >
+          {playing ? <CameraOn /> : <CameraOff />}
+        </Button>
+      )}
       <Button
         style={{
           height: "75px",

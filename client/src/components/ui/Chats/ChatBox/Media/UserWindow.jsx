@@ -1,17 +1,21 @@
 import React from "react";
 import ReactPlayer from "react-player";
+import Avatar from "../../../Avatar/Avatar";
+import styles from "./UserWindow.module.css";
 
-export default function UserWindow({ url }) {
+export default function UserWindow({
+  url,
+  isVideoCall = false,
+  remoteUser = false,
+}) {
   return (
     <div
       style={{
-        maxWidth: "min(100%, 400px)",
-        aspectRatio: "4 / 3",
-        overflow: "hidden",
-        borderRadius: "1em",
+        aspectRatio: isVideoCall && "4 / 3",
       }}
+      className={`${styles["user-window"]}`}
     >
-      {url && (
+      {isVideoCall ? (
         <>
           <ReactPlayer
             height="100%"
@@ -21,6 +25,14 @@ export default function UserWindow({ url }) {
             url={url}
           />
         </>
+      ) : remoteUser ? (
+        <Avatar
+          name={remoteUser.name}
+          bgColor={remoteUser.bgColor}
+          size={150}
+        />
+      ) : (
+        <></>
       )}
     </div>
   );

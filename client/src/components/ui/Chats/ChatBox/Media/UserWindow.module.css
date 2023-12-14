@@ -1,0 +1,15 @@
+.user-window {
+  display: flex;
+  flex-direction: column;
+  max-width: min(100%, 400px);
+  overflow: hidden;
+  border-radius: 1em;
+  position: relative;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .user-window {
+    gap: 0;
+  }
+}
