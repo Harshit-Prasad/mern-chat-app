@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
+import cors from "cors";
 import { createServer } from "node:http";
 
 import { connectDB } from "./config/db.js";
@@ -12,8 +13,22 @@ import { errorHandler, notFound } from "./middlewares/error.middleware.js";
 
 dotenv.config();
 connectDB();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 const app = express();
+
+const whiteList = ["https://converse.com", "http://localhost:5173"];
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (whiteList.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
 const server = createServer(app);
 const io = new Server(server, {
   pingTimeout: 60000,
@@ -23,7 +38,9 @@ const io = new Server(server, {
 });
 
 app.use(express.json());
-
+app.get("/", (req, res) => {
+  res.send("From lh: 5000");
+});
 // Routes
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
