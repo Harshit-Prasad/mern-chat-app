@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "",
   "scripts": {
-    "client": "npm run dev --prefix client",
-    "server": "npm run dev --prefix server",
+    "client": "npm run build --prefix client",
+    "server": "npm run start --prefix server",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "build": "npm install --prefix server && npm install --prefix client && npm run build --prefix client"
   },
