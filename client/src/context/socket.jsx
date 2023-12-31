@@ -9,8 +9,14 @@ export const useSocket = () => {
 };
 
 export default function SocketProvider({ children }) {
-  const ENDPOINT = "http://localhost:5000";
-  const socket = useMemo(() => io(ENDPOINT), []);
+  const ENDPOINT = "https://converse-api.onrender.com";
+  const socket = useMemo(
+    () =>
+      io(ENDPOINT, {
+        withCredentials: true,
+      }),
+    []
+  );
 
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>

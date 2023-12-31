@@ -33,14 +33,13 @@ const server = createServer(app);
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "https://converse-47l6.onrender.com",
+    origin: ["https://converse-47l6.onrender.com"],
+    credentials: true,
   },
 });
 
 app.use(express.json());
-app.get("/", (req, res) => {
-  res.send("From lh: 5000");
-});
+
 // Routes
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
