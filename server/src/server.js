@@ -16,7 +16,10 @@ connectDB();
 const PORT = process.env.PORT || 5000;
 const app = express();
 
-const whiteList = ["https://converse.com", "http://localhost:5173"];
+const whiteList = [
+  "https://converse-b6pk.onrender.com",
+  "http://localhost:5173",
+];
 const corsOptions = {
   origin: (origin, callback) => {
     if (whiteList.indexOf(origin) !== -1 || !origin) {
@@ -33,7 +36,7 @@ const server = createServer(app);
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:5173",
+    origin: "https://converse-b6pk.onrender.com",
   },
 });
 
