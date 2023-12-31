@@ -13,7 +13,7 @@ export default function UserWindow({
       style={{
         aspectRatio: isVideoCall && "4 / 3",
       }}
-      className={`${styles["user-window"]}`}
+      className={`${styles["user-window"]} mt-1`}
     >
       {isVideoCall ? (
         <>
@@ -26,11 +26,16 @@ export default function UserWindow({
           />
         </>
       ) : remoteUser ? (
-        <Avatar
-          name={remoteUser.name}
-          bgColor={remoteUser.bgColor}
-          size={150}
-        />
+        <>
+          <Avatar
+            name={remoteUser.name}
+            bgColor={remoteUser.bgColor}
+            size={150}
+          />
+          <>
+            <ReactPlayer height="0%" width="0%" playing playsinline url={url} />
+          </>
+        </>
       ) : (
         <></>
       )}
