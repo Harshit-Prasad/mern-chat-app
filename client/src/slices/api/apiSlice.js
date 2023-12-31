@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:5000",
+  baseUrl: "https://converse-api.onrender.com",
   prepareHeaders(headers, { getState }) {
     const authenticationToken = getState().authentication.userInformation;
     if (authenticationToken)
