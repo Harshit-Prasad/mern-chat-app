@@ -310,12 +310,17 @@ export default function ChatBox() {
   const handleCallRemoteUser = useCallback(
     async (isVideoCall) => {
       if (remoteUserID) {
-        console.log(isVideoCall);
         setIsVideoCall(isVideoCall);
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: isVideoCall,
             audio: true,
+          });
+          const audioTrack = stream.getAudioTracks()[0];
+          audioTrack.applyConstraints({
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
           });
           setLocalStream(stream);
           const offer = await webRTCPeer.getOffer();
@@ -352,6 +357,12 @@ export default function ChatBox() {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: isVideoCall,
         audio: true,
+      });
+      const audioTrack = stream.getAudioTracks()[0];
+      audioTrack.applyConstraints({
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
       });
       setLocalStream(stream);
       const answer = await webRTCPeer.getAnswer(offer);
